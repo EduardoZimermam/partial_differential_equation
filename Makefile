@@ -5,9 +5,9 @@
     LFLAGS = -lm
 
       PROG = pdeSolver
-      OBJS = utils.o
+      OBJS = utils.o functions.o
 
-%.o: %.c %.h utils.h
+%.o: %.c %.h utils.h functions.h
 	$(CC) -c $(CFLAGS) $<
 
 $(PROG):  $(OBJS) $(PROG).o
