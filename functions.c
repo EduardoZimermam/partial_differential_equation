@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include "functions.h"
 
@@ -28,8 +29,6 @@
  * Considera todas as condições de entrada das variáveis.
  */
 int getParametros (int argc, char **argv, int *nx, int *ny, int *itr, char *caminhoSaida){
- 
- 	printf("ENTROU\n");
 
 	for(int i = 1; i < argc; i ++){
 		if (strcmp(argv[i], "-nx") == 0){
@@ -42,7 +41,7 @@ int getParametros (int argc, char **argv, int *nx, int *ny, int *itr, char *cami
 			else{
 				if (strcmp(argv[i], "-i") == 0){
 					*itr = atoi(argv[i+1]);
-				}			
+				}
 				else{
 					if (strcmp(argv[i], "-o") == 0 ){
 						strcpy(caminhoSaida, argv [i+1]);
@@ -106,18 +105,89 @@ double limiteInferior(double x){
 	return (seno);
 }
 
+double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, double ny){
+  double esquerda, direita, cima, baixo, central, bordaSuperior, bordaInferior;
+
+  esquerda = -2*(hy * hy) - hx * (hy * hy);
+  direita = -2*(hy * hy) + hx * (hy * hy);
+  cima = -2*(hx * hx) + hy * (hx * hx);
+  baixo = -2*(hx * hx) - hy * (hx * hx);
+  central = 4*(hy * hy) + 4*(hx * hx) + 2*(hx * hx) * (hy * hy) * n;
+
+  // printf("esquerda: %lf, direita: %lf, cima: %lf, baixo: %lf, central: %lf\n", esquerda, direita, cima, baixo, central);
+
+  // sistemaLinear->superiorAfastada = alocaVetor(nx * ny);
+  // sistemaLinear->superior = alocaVetor(nx * ny);
+  // sistemaLinear->principal = alocaVetor(nx * ny);
+  // sistemaLinear->inferior = alocaVetor(nx * ny);
+  // sistemaLinear->inferiorAfastada = alocaVetor(nx * ny);
+  // sistemaLinear->b = alocaVetor(nx * ny);
+
+
+  bordaSuperior = limiteSuperior(0.0 + hx);
+  printf("Superior/Esquerda: %.15lf + %.15lf + %.15lf = %.15lf \n", direita, central, baixo, (calculaFuncao(hx, (M_PI - hy)) - (0.0 * esquerda) - (bordaSuperior * cima)));
+
+  bordaSuperior = limiteSuperior(M_PI - hx);
+  printf("Superior/Direita: %.15lf + %.15lf + %.15lf = %.15lf \n", esquerda, central, baixo, (calculaFuncao((M_PI - hx), (M_PI - hy)) - (0.0 * direita) - (bordaSuperior * cima)));
+
+  bordaInferior = limiteInferior(0.0 + hx);
+  printf("Inferior/Esquerda: %.15lf + %.15lf + %.15lf = %.15lf \n", direita, central, cima, (calculaFuncao(hx, hy) - (0.0 * esquerda) - (bordaInferior * baixo)));
+
+  bordaInferior = limiteInferior(M_PI - hx);
+  printf("Inferior/Direita: %.15lf + %.15lf + %.15lf = %.15lf \n", esquerda, central, cima, (calculaFuncao((M_PI - hx), (0.0 + hy)) - (0.0 * direita) - (bordaInferior * baixo)));
+
+  printf("\n\n");
+
+  // Rosa 2
+  for (int i = 2; i <= nx - 1; i++) {
+    bordaSuperior = limiteSuperior(i * hx);
+    printf("Para i=%d: %.15lf + %.15lf + %.15lf + %.15lf = %.15lf \n", i, direita, esquerda, central, baixo, (calculaFuncao((i * hx), (M_PI - hy)) - (bordaSuperior * cima)));
+  }
+
+  printf("\n\n");
+
+  // Verde
+  for (int i = 2; i <= nx - 1; i++) {
+    bordaInferior = limiteInferior(i);
+    printf("Para i=%d: %.15lf + %.15lf + %.15lf + %.15lf = %.15lf \n", i, direita, esquerda, central, cima, (calculaFuncao((i * hx), (0.0 + hy)) - (bordaInferior * baixo)));
+  }
+
+  printf("\n\n");
+
+  // Azul
+  for (int i = 2; i <= ny - 1; i++) {
+    printf("Para i=%d: %.15lf + %.15lf + %.15lf + %.15lf = %.15lf \n", i, direita, central, cima, baixo, (calculaFuncao((i * hy), (0.0 + hx)) - (0.0 * esquerda)));
+  }
+
+  printf("\n\n");
+
+  // Rosa
+  for (int i = 2; i <= ny - 1; i++) {
+    printf("Para i=%d: %.15lf + %.15lf + %.15lf + %.15lf = %.15lf \n", i, esquerda, central, cima, baixo, (calculaFuncao((i * hy), (M_PI - hx)) - (0.0 * direita)));
+  }
+
+  printf("\n\n");
+
+  // Miolo
+  for (int i = 2; i <= nx - 1; i++) {
+    for (int j = 2; j <= ny - 1; j++) {
+          printf("Para i=%d e j=%d: %.15lf + %.15lf + %.15lf + %.15lf + %.15lf = %.15lf \n", i, j, esquerda, direita, central, cima, baixo, calculaFuncao((i * hx), (j * hy)));
+    }
+  }
+
+}
 
 /**
  * @brief Cálculo da função f(x,y).
- * @param x  
- * @param y  
+ * @param x
+ * @param y
  * @return Retorna o valor da função.
  */
-void calculaFuncao(double x, double y){
+double calculaFuncao(double x, double y){
 
 	double aux1 = sin(2 * M_PI * x) * (sinh(M_PI*y));
 	double aux = aux1 + (sin(2 * M_PI * (M_PI-x))* (sinh(M_PI * (M_PI - y))));
 	double result = (4 * (M_PI*M_PI)) * aux;
 
-	printf("Valor da Função é = %.2f \n",result);
+  return result;
 }

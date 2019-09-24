@@ -8,10 +8,9 @@
  * @brief Programa principal.
  * Chamada das funções.
 */
-
-
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include "functions.h"
 
 int main(int argc, char **argv){
@@ -21,15 +20,22 @@ int main(int argc, char **argv){
 
 	param = getParametros (argc, argv, &nx, &ny, &itr, caminhoSaida);
 
-	if (param == -1){ 	
+	if (param == -1){
 
 		fprintf(stderr, "\n\n ERRO NOS PARÂMETROS!!!\n\n");
 		return(-1);
-	} 
+	}
 	else {
-	
-		printf("EXECUTA O PROGRAMA\n");	
+		
+		double hx, hy, n;
+		sL sistemaLinear;
+
+		hx = M_PI / nx;
+		hy = M_PI / ny;
+		n = 4 * (M_PI * M_PI);
+
+		calculaEquacaoDiferencialParcial(hx, hy, n, nx, ny);
+
 		return(0);
 	}
-
 }

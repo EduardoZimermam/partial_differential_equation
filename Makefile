@@ -2,17 +2,17 @@ CC = gcc -g
 
 CFLAGS = -lm
 
-objs = cgSolver.o functions.o utils.o
+objs = pdeSolver.o functions.o utils.o
 
-all: cgSolver
+all: pdeSolver
 
-cgSolver: $(objs) $(CFLAGS)
+pdeSolver: $(objs) $(CFLAGS)
 
 utils.o: utils.c
 
 functions.o: functions.c
 
-cgSolver.o: cgSolver.c utils.o functions.o
+pdeSolver.o: pdeSolver.c utils.o functions.o
 
 doc: Doxyfile
 				doxygen $<
@@ -30,8 +30,8 @@ Doxyfile:
 		rm -f $@.new
 
 clean:
-	-rm -f $(objs) *~ cgSolver
-	-rm -rf html 
+	-rm -f $(objs) *~ pdeSolver
+	-rm -rf html
 
 purge:
 	-rm -f $(objs) *~

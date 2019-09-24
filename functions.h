@@ -11,11 +11,16 @@
 #ifndef __FUNCTIONS__
 #define __FUNCTIONS__
 
+typedef struct sL {
+  double *superiorAfastada, *superior, *principal, *inferior, *inferiorAfastada;
+  double *b;
+} sL;
 
 int getParametros (int argc, char **argv, int *nx, int *ny, int *itr, char *caminhoSaida);
+double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, double ny);
 double* alocaVetor(int tamVetor);
 double limiteSuperior(double x);
 double limiteInferior(double x);
-void calculaFuncao(double x, double y);
+double calculaFuncao(double x, double y);
 
 #endif
