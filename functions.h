@@ -14,8 +14,8 @@
 
 int getParametros (int argc, char **argv, int *nx, int *ny, int *itr, char *caminhoSaida);
 double* alocaVetor(int tamVetor);
-double limiteSuperior(double x, double PI);
-double limiteInferior(double x, double PI);
-void calculaFuncao(double x, double y, double PI);
+double limiteSuperior(double x);
+double limiteInferior(double x);
+void calculaFuncao(double x, double y);
 
 #endif

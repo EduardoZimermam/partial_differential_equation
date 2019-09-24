@@ -90,18 +90,18 @@ double* alocaVetor(int tamVetor){
 }
 
 
-double limiteSuperior(double x, double PI){
+double limiteSuperior(double x){
 	//u(x,PI)= sin (2 * PI * x) * sinh(PI*PI);
-	double seno = sin(2 * PI * x) * (sinh(PI*PI));
+	double seno = sin(2 * M_PI * x) * (sinh(M_PI*M_PI));
 	//printf("Valor de seno Superior de %.2f = %.2f \n",x,seno);
 
 	return (seno);
 }
 
 
-double limiteInferior(double x, double PI){
+double limiteInferior(double x){
 	//u(x,0)= sin(2*PI(PI-x))* sinh(PI*PI);
-	double seno = sin(2 * PI * (PI-x))* (sinh(PI*PI));
+	double seno = sin(2 * M_PI * (M_PI-x))* (sinh(M_PI*M_PI));
 	//printf("Valor de seno Inferior de %.2f = %.2f \n",x,seno);
 	return (seno);
 }
@@ -113,11 +113,11 @@ double limiteInferior(double x, double PI){
  * @param y  
  * @return Retorna o valor da função.
  */
-void calculaFuncao(double x, double y, double PI){
+void calculaFuncao(double x, double y){
 
-	double aux1 = sin(2 * PI * x) * (sinh(PI*y));
-	double aux = aux1 + (sin(2 * PI * (PI-x))* (sinh(PI * (PI - y))));
-	double result = (4 * (PI*PI)) * aux;
+	double aux1 = sin(2 * M_PI * x) * (sinh(M_PI*y));
+	double aux = aux1 + (sin(2 * M_PI * (M_PI-x))* (sinh(M_PI * (M_PI - y))));
+	double result = (4 * (M_PI*M_PI)) * aux;
 
 	printf("Valor da Função é = %.2f \n",result);
 }
