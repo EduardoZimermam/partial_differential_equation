@@ -12,6 +12,10 @@
 #define __FUNCTIONS__
 
 
-//int getParametros (int, char**, int*, int*, int*, char*);
 int getParametros (int argc, char **argv, int *nx, int *ny, int *itr, char *caminhoSaida);
-#endif // __FUNCTIONS__
+double* alocaVetor(int tamVetor);
+double limiteSuperior(double x, double PI);
+double limiteInferior(double x, double PI);
+void calculaFuncao(double x, double y, double PI);
+
+#endif

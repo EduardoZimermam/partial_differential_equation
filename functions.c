@@ -72,3 +72,52 @@ int getParametros (int argc, char **argv, int *nx, int *ny, int *itr, char *cami
 		}
 	}
 }
+
+
+/**
+ * @brief Alocação dinâmica de um Vetor.
+ * @param tamVetor  Tamanho do vetor a ser alocado.
+ * @return Retorna um vetor alocado.
+ */
+double* alocaVetor(int tamVetor){
+
+	double *vetorSaida = malloc(tamVetor * sizeof(double));
+	for (int i = 0; i < tamVetor; ++i){
+		vetorSaida[i] = 0;
+	}
+
+ return(vetorSaida);
+}
+
+
+double limiteSuperior(double x, double PI){
+	//u(x,PI)= sin (2 * PI * x) * sinh(PI*PI);
+	double seno = sin(2 * PI * x) * (sinh(PI*PI));
+	//printf("Valor de seno Superior de %.2f = %.2f \n",x,seno);
+
+	return (seno);
+}
+
+
+double limiteInferior(double x, double PI){
+	//u(x,0)= sin(2*PI(PI-x))* sinh(PI*PI);
+	double seno = sin(2 * PI * (PI-x))* (sinh(PI*PI));
+	//printf("Valor de seno Inferior de %.2f = %.2f \n",x,seno);
+	return (seno);
+}
+
+
+/**
+ * @brief Cálculo da função f(x,y).
+ * @param x  
+ * @param y  
+ * @return Retorna o valor da função.
+ */
+void calculaFuncao(double x, double y, double PI){
+
+	double aux1 = sin(2 * PI * x) * (sinh(PI*y));
+	double aux = aux1 + (sin(2 * PI * (PI-x))* (sinh(PI * (PI - y))));
+	double result = (4 * (PI*PI)) * aux;
+
+	printf("Valor da Função é = %.2f \n",result);
+}
