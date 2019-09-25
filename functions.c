@@ -89,6 +89,11 @@ double* alocaVetor(int tamVetor){
 }
 
 
+/**
+ * @brief Cálculo da Borda Superior.
+ * @param x
+ * @return Retorna .
+ */
 double limiteSuperior(double x){
 	//u(x,PI)= sin (2 * PI * x) * sinh(PI*PI);
 	double seno = sin(2 * M_PI * x) * (sinh(M_PI*M_PI));
@@ -97,13 +102,35 @@ double limiteSuperior(double x){
 	return (seno);
 }
 
-
+/**
+ * @brief Cálculo da da Borda Inferior.
+ * @param x
+ * @return Retorna
+ */
 double limiteInferior(double x){
 	//u(x,0)= sin(2*PI(PI-x))* sinh(PI*PI);
 	double seno = sin(2 * M_PI * (M_PI-x))* (sinh(M_PI*M_PI));
 	//printf("Valor de seno Inferior de %.2f = %.2f \n",x,seno);
 	return (seno);
 }
+
+
+/**
+ * @brief Cálculo da função f(x,y).
+ * @param x
+ * @param y
+ * @return Retorna o valor da função.
+ */
+double calculaFuncao(double x, double y){
+
+	double aux1 = sin(2 * M_PI * x) * (sinh(M_PI*y));
+	double aux = aux1 + (sin(2 * M_PI * (M_PI-x))* (sinh(M_PI * (M_PI - y))));
+	double result = (4 * (M_PI*M_PI)) * aux;
+
+  return (result);
+}
+
+
 
 double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, double ny){
   double esquerda, direita, cima, baixo, central, bordaSuperior, bordaInferior;
@@ -177,17 +204,62 @@ double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double n
 
 }
 
+
+
 /**
- * @brief Cálculo da função f(x,y).
- * @param x
- * @param y
- * @return Retorna o valor da função.
+ * @brief Método de Gauss-Seidel
+ * @param SL Ponteiro para o sistema linear
+ * @param x ponteiro para o vetor solução
+ * @param erro menor erro aproximado para encerrar as iterações
+ *
+ * @return Retorna 
  */
-double calculaFuncao(double x, double y){
+int gaussSeidel (SistLinear_t *SL, real_t *x, real_t erro){
+  
+  double tTotal, tIteracao, soma, *Xk; //X novo
+  unsigned int n = SL->n;
 
-	double aux1 = sin(2 * M_PI * x) * (sinh(M_PI*y));
-	double aux = aux1 + (sin(2 * M_PI * (M_PI-x))* (sinh(M_PI * (M_PI - y))));
-	double result = (4 * (M_PI*M_PI)) * aux;
+  Xk = malloc(sizeof(double)*n);
 
-  return result;
+  	for(int k = 0; k < MAXIT; k++){
+  		double start = timestamp();
+	    for(int i= 0; i < n; i++){  // i = 1; i <= nx-1
+	      soma= 0.0;
+	      for(int j= 0; j < i; j++){  // i = 1; i <= ny-1
+	        soma += SL->A[i *n +j] * Xk[j];
+	      }
+
+	      for (int j = (i+1); j < n; j++){
+	        soma += SL->A[i *n +j] * x[j];
+	      }
+
+	      Xk[i] = (SL->b[i] - soma) / SL->A[i *n +i];
+	    }
+
+	    erro = 0.0;
+	    for (int i = 0; i < n; i++) { //criterio de parada
+	      double sub = fabs(x[i] - Xk[i]);
+	      if (erro < sub){
+	        erro = sub;
+	      }
+	    }
+	    double end = timestamp() - start;
+
+	    for (int i = 0; i < n; ++i){ //troca de ponteiro
+	      x[i]= Xk[i];
+	    }
+
+	    tTotal+= end;
+		tIteracao = tTotal / k;
+
+	    if(erro < EPS){
+	    	//printf("Tempo por iteração Gauss-Seidel: %lf.\n", tIteracao);
+  			//printf("Tempo total Gauss-Seidel: %lf.\n", tTotal);	
+	      return(k);
+	    }
+  	}
+
+
+    fprintf(stderr,"O método Gauss-Seidel não converge.\n");
+    return(-1);
 }
