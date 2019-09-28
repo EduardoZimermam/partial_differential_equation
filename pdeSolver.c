@@ -17,6 +17,7 @@ int main(int argc, char **argv){
 
 	int nx, ny, itr, param;
 	char caminhoSaida[200];
+	sL sistemaLinear;
 
 	param = getParametros (argc, argv, &nx, &ny, &itr, caminhoSaida);
 
@@ -34,7 +35,7 @@ int main(int argc, char **argv){
 		hy = M_PI / ny;
 		n = 4 * (M_PI * M_PI);
 
-		calculaEquacaoDiferencialParcial(hx, hy, n, nx, ny);
+		calculaEquacaoDiferencialParcial(hx, hy, n, nx, ny, &sistemaLinear);
 
 		return(0);
 	}

@@ -17,7 +17,7 @@ typedef struct sL {
 } sL;
 
 int getParametros (int argc, char **argv, int *nx, int *ny, int *itr, char *caminhoSaida);
-double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, double ny);
+double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, double ny, sL *sistemaLinear);
 double* alocaVetor(int tamVetor);
 double limiteSuperior(double x);
 double limiteInferior(double x);
