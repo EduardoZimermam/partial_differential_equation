@@ -131,7 +131,7 @@ double calculaFuncao(double x, double y) {
  * @brief Cálculo da discretização da malha.
  * @param hx Tamanho entre um ponto e outro na dimensão X.
  * @param hy Tamanho entre um ponto e outro na dimensão Y.
- * @param n
+ * @param n Parte do cálculo para a solução de discretização da malha.
  * @param nx Número de pontos a serem calculados na dimensão X.
  * @param ny Número de pontos a serem calculados na dimensão Y.
  * @param sistenaLinear Struct do sistema linear a ser montado.
@@ -180,7 +180,7 @@ double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double n
 	sistemaLinear->b[idx] = calculaFuncao(hx, hy) - (0.0 * esquerda) - (bordaInferior * baixo);
 	idx++;
 
-	/*Cálculo DE QUEM?*/
+	/*Cálculo dos pontos da Borda Inferior*/
 	for (int i = 2; i <= nx - 1; i++)	{
 		bordaInferior = limiteInferior(i);
 		// printf("Para i=%d: %.15lf + %.15lf + %.15lf + %.15lf = %.15lf \n", i, direita, esquerda, central, cima, (calculaFuncao((i * hx), (0.0 + hy)) - (bordaInferior * baixo)));
@@ -218,7 +218,7 @@ double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double n
 	sistemaLinear->b[idx] = calculaFuncao((M_PI - hx), (M_PI - hy)) - (0.0 * direita) - (bordaSuperior * cima);
 	idx++;
 
-	/*Cálculo da Lateral ROSA2*/
+	/*Cálculo dos pontos da Borda Superior*/
 	for (int i = 2; i <= nx - 1; i++)	{
 		bordaSuperior = limiteSuperior(i * hx);
 		// printf("Para i=%d: %.15lf + %.15lf + %.15lf + %.15lf = %.15lf \n", i, direita, esquerda, central, baixo, (calculaFuncao((i * hx), (M_PI - hy)) - (bordaSuperior * cima)));
@@ -231,7 +231,7 @@ double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double n
 		idx++;
 	}
 
-	/*Cálculo da Lateral AZUL*/
+	/*Cálculo da Lateral Esqueda*/
 	for (int i = 2; i <= ny - 1; i++)	{
 		// printf("Para i=%d: %.15lf + %.15lf + %.15lf + %.15lf = %.15lf \n", i, direita, central, cima, baixo, (calculaFuncao((i * hy), (0.0 + hx)) - (0.0 * esquerda)));
 		sistemaLinear->principal[idx] = central;
@@ -243,7 +243,7 @@ double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double n
 		idx++;
 	}
 
-	/*Cálculo da Lateral ROSA*/
+	/*Cálculo da Lateral Direita*/
 	for (int i = 2; i <= ny - 1; i++)	{
 		// printf("Para i=%d: %.15lf + %.15lf + %.15lf + %.15lf = %.15lf \n", i, esquerda, central, cima, baixo, (calculaFuncao((i * hy), (M_PI - hx)) - (0.0 * direita)));
 		sistemaLinear->principal[idx] = central;
