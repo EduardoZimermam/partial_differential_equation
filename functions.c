@@ -14,6 +14,8 @@
 
 #include "functions.h"
 
+
+
 /**
  * @brief Lê a linha de comando de forma dinâmica.
  * @param argc    Número de argumentos da linha de comando.
@@ -68,6 +70,8 @@ int getParametros(int argc, char **argv, int *nx, int *ny, int *itr, char *camin
 	}
 }
 
+
+
 /**
  * @brief Alocação dinâmica de um Vetor.
  * @param tamVetor  Tamanho do vetor a ser alocado.
@@ -83,35 +87,34 @@ double *alocaVetor(int tamVetor) {
 	return (vetorSaida);
 }
 
+
+
 /**
  * @brief Cálculo da Borda Superior.
- * @param x
- * @return Retorna .
+ * @param x Ponto na dimensão x a ser considerado no cálculo.
+ * @return Retorna o valor calculado para a borda superior.
  */
 double limiteSuperior(double x) {
-	//u(x,PI)= sin (2 * PI * x) * sinh(PI*PI);
+	
 	double seno = sin(2 * M_PI * x) * (sinh(M_PI * M_PI));
-	//printf("Valor de seno Superior de %.2f = %.2f \n",x,seno);
-
 	return (seno);
 }
 
 /**
  * @brief Cálculo da da Borda Inferior.
- * @param x
- * @return Retorna
+ * @param x Ponto na dimensão x a ser considerado no cálculo.
+ * @return @return Retorna o valor calculado para a borda inferior.
  */
 double limiteInferior(double x) {
-	//u(x,0)= sin(2*PI(PI-x))* sinh(PI*PI);
+	
 	double seno = sin(2 * M_PI * (M_PI - x)) * (sinh(M_PI * M_PI));
-	//printf("Valor de seno Inferior de %.2f = %.2f \n",x,seno);
 	return (seno);
 }
 
 /**
  * @brief Cálculo da função f(x,y).
- * @param x
- * @param y
+ * @param x Ponto na dimensão x a ser considerado no cálculo.
+ * @param y Ponto na dimensão y a ser considerado no cálculo.
  * @return Retorna o valor da função.
  */
 double calculaFuncao(double x, double y) {
@@ -123,16 +126,29 @@ double calculaFuncao(double x, double y) {
 	return (result);
 }
 
+
+/**
+ * @brief Cálculo da discretização da malha.
+ * @param hx Tamanho entre um ponto e outro na dimensão X.
+ * @param hy Tamanho entre um ponto e outro na dimensão Y.
+ * @param n
+ * @param nx Número de pontos a serem calculados na dimensão X.
+ * @param ny Número de pontos a serem calculados na dimensão Y.
+ * @param sistenaLinear Struct do sistema linear a ser montado.
+ * @return Preenche os vetores com os valores dos pontos da malha.
+ */
 double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, double ny, sL *sistemaLinear) {
 	double esquerda, direita, cima, baixo, central, bordaSuperior, bordaInferior;
 	int idx = 0;
 
+	/*Cálculo dos Coeficientes Uij*/
 	esquerda = -2 * (hy * hy) - hx * (hy * hy);
 	direita = -2 * (hy * hy) + hx * (hy * hy);
 	cima = -2 * (hx * hx) + hy * (hx * hx);
 	baixo = -2 * (hx * hx) - hy * (hx * hx);
 	central = 4 * (hy * hy) + 4 * (hx * hx) + 2 * (hx * hx) * (hy * hy) * n;
 
+	/*Alocação dos vetores das diagonais*/
 	sistemaLinear->superiorAfastada = alocaVetor(nx * ny);
 	sistemaLinear->superior = alocaVetor(nx * ny);
 	sistemaLinear->principal = alocaVetor(nx * ny);
@@ -140,6 +156,7 @@ double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double n
 	sistemaLinear->inferiorAfastada = alocaVetor(nx * ny);
 	sistemaLinear->b = alocaVetor(nx * ny);
 
+	/*Cálculo do Ponto Superior Esquerdo*/
 	bordaSuperior = limiteSuperior(0.0 + hx);
 	// printf("Superior/Esquerda: %.15lf + %.15lf + %.15lf = %.15lf \n", direita, central, baixo, (calculaFuncao(hx, (M_PI - hy)) - (0.0 * esquerda) - (bordaSuperior * cima)));
 
@@ -151,6 +168,7 @@ double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double n
 	sistemaLinear->b[idx] = calculaFuncao(hx, (M_PI - hy)) - (0.0 * esquerda) - (bordaSuperior * cima);
 	idx++;
 
+	/*Cálculo do Ponto Inferior Esquerdo*/
 	bordaInferior = limiteInferior(0.0 + hx);
 	// printf("Inferior/Esquerda: %.15lf + %.15lf + %.15lf = %.15lf \n", direita, central, cima, (calculaFuncao(hx, hy) - (0.0 * esquerda) - (bordaInferior * baixo)));
 
@@ -162,6 +180,7 @@ double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double n
 	sistemaLinear->b[idx] = calculaFuncao(hx, hy) - (0.0 * esquerda) - (bordaInferior * baixo);
 	idx++;
 
+	/*Cálculo DE QUEM?*/
 	for (int i = 2; i <= nx - 1; i++)	{
 		bordaInferior = limiteInferior(i);
 		// printf("Para i=%d: %.15lf + %.15lf + %.15lf + %.15lf = %.15lf \n", i, direita, esquerda, central, cima, (calculaFuncao((i * hx), (0.0 + hy)) - (bordaInferior * baixo)));
@@ -174,6 +193,8 @@ double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double n
 		idx++;
 	}
 
+	
+	/*Cálculo do Ponto Inferior Direito*/
 	bordaInferior = limiteInferior(M_PI - hx);
 	// printf("Inferior/Direita: %.15lf + %.15lf + %.15lf = %.15lf \n", esquerda, central, cima, (calculaFuncao((M_PI - hx), (0.0 + hy)) - (0.0 * direita) - (bordaInferior * baixo)));
 
@@ -185,6 +206,7 @@ double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double n
 	sistemaLinear->b[idx] = calculaFuncao((M_PI - hx), (0.0 + hy)) - (0.0 * direita) - (bordaInferior * baixo);
 	idx++;
 
+	/*Cálculo do Ponto Superior Direito*/
 	bordaSuperior = limiteSuperior(M_PI - hx);
 	// printf("Superior/Direita: %.15lf + %.15lf + %.15lf = %.15lf \n", esquerda, central, baixo, (calculaFuncao((M_PI - hx), (M_PI - hy)) - (0.0 * direita) - (bordaSuperior * cima)));
 
@@ -196,7 +218,7 @@ double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double n
 	sistemaLinear->b[idx] = calculaFuncao((M_PI - hx), (M_PI - hy)) - (0.0 * direita) - (bordaSuperior * cima);
 	idx++;
 
-	// Rosa 2
+	/*Cálculo da Lateral ROSA2*/
 	for (int i = 2; i <= nx - 1; i++)	{
 		bordaSuperior = limiteSuperior(i * hx);
 		// printf("Para i=%d: %.15lf + %.15lf + %.15lf + %.15lf = %.15lf \n", i, direita, esquerda, central, baixo, (calculaFuncao((i * hx), (M_PI - hy)) - (bordaSuperior * cima)));
@@ -209,7 +231,7 @@ double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double n
 		idx++;
 	}
 
-	// Azul
+	/*Cálculo da Lateral AZUL*/
 	for (int i = 2; i <= ny - 1; i++)	{
 		// printf("Para i=%d: %.15lf + %.15lf + %.15lf + %.15lf = %.15lf \n", i, direita, central, cima, baixo, (calculaFuncao((i * hy), (0.0 + hx)) - (0.0 * esquerda)));
 		sistemaLinear->principal[idx] = central;
@@ -221,7 +243,7 @@ double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double n
 		idx++;
 	}
 
-	// Rosa
+	/*Cálculo da Lateral ROSA*/
 	for (int i = 2; i <= ny - 1; i++)	{
 		// printf("Para i=%d: %.15lf + %.15lf + %.15lf + %.15lf = %.15lf \n", i, esquerda, central, cima, baixo, (calculaFuncao((i * hy), (M_PI - hx)) - (0.0 * direita)));
 		sistemaLinear->principal[idx] = central;
@@ -233,7 +255,7 @@ double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double n
 		idx++;
 	}
 
-	// Miolo
+	/*Cálculo dos Pontos internos da malha*/
 	for (int i = 2; i <= nx - 1; i++)	{
 		for (int j = 2; j <= ny - 1; j++) {
 			// printf("Para i=%d e j=%d: %.15lf + %.15lf + %.15lf + %.15lf + %.15lf = %.15lf \n", i, j, esquerda, direita, central, cima, baixo, calculaFuncao((i * hx), (j * hy)));
@@ -247,6 +269,11 @@ double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double n
 		}
 	}
 }
+
+
+
+
+
 
 /**
  * @brief Método de Gauss-Seidel
