@@ -17,11 +17,11 @@ typedef struct sL {
 } sL;
 
 int getParametros (int argc, char **argv, int *nx, int *ny, int *itr, char *caminhoSaida);
-double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, double ny, sL *sistemaLinear);
+sL* calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, double ny);
 double* alocaVetor(int tamVetor);
 double limiteSuperior(double x);
 double limiteInferior(double x);
 double calculaFuncao(double x, double y);
-void gaussSeidel (sL *SL, double *x, double n, double erro);
+void gaussSeidel (sL *SL, double *x, int nx, int ny, double erro, int itr);
 
 #endif

@@ -14,8 +14,6 @@
 
 #include "functions.h"
 
-#define MAXIT 30
-
 
 
 /**
@@ -55,14 +53,14 @@ int getParametros(int argc, char **argv, int *nx, int *ny, int *itr, char *camin
 			}
 		}
 	}
-
-	if (*nx < 1) {
-		fprintf(stderr, "ERRO: falta o parâmetro obrigatório -nx (número de pontos a serem calculados em X)\n");
+	
+	if (*nx < 3) {
+		fprintf(stderr, "ERRO: falta o parâmetro obrigatório -nx ou número informado menor que 2 (número de pontos a serem calculados em X)\n");
 		return (-1);
 	}
 
-	if (*ny < 1) {
-		fprintf(stderr, "ERRO: falta o parâmetro obrigatório -ny (número de pontos a serem calculados em Y)\n");
+	if (*ny < 3) {
+		fprintf(stderr, "ERRO: falta o parâmetro obrigatório -ny ou número informado menor que 2(número de pontos a serem calculados em Y)\n");
 		return (-1);
 	}
 
@@ -139,9 +137,12 @@ double calculaFuncao(double x, double y) {
  * @param sistenaLinear Struct do sistema linear a ser montado.
  * @return Preenche os vetores com os valores dos pontos da malha.
  */
-double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, double ny, sL *sistemaLinear) {
+sL* calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, double ny) {
 	double esquerda, direita, cima, baixo, central, bordaSuperior, bordaInferior;
 	int idx = 0;
+	sL *sistemaLinear;
+
+	sistemaLinear = malloc(sizeof(sL));
 
 	/*Cálculo dos Coeficientes Uij*/
 	esquerda = -2 * (hy * hy) - hx * (hy * hy);
@@ -257,15 +258,11 @@ double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double n
 		}
 	}
 
-	for (int i = 0; i < ny * nx; ++i) {
-		printf("%.15lf %.15lf %.15lf %.15lf %.15lf = %.15lf\n", sistemaLinear->superiorAfastada[i], sistemaLinear->superior[i], sistemaLinear->principal[i], sistemaLinear->inferior[i], sistemaLinear->inferiorAfastada[i], sistemaLinear->b[i]);
-	}
+	// for (int i = 0; i < ny * nx; ++i) {
+	// 	printf("%.15lf %.15lf %.15lf %.15lf %.15lf = %.15lf\n", sistemaLinear->superiorAfastada[i], sistemaLinear->superior[i], sistemaLinear->principal[i], sistemaLinear->inferior[i], sistemaLinear->inferiorAfastada[i], sistemaLinear->b[i]);
+	// }
 
-	double  *x, erro;
-
-	x = alocaVetor(nx * ny);
-
-	gaussSeidel(sistemaLinear, x, nx * ny, erro);
+	return (sistemaLinear);
 }
 
 /**
@@ -276,15 +273,17 @@ double calculaEquacaoDiferencialParcial(double hx, double hy, double n, double n
  *
  * @return Retorna
  */
-void gaussSeidel (sL *SL, double *x, double n, double erro) {
+void gaussSeidel (sL *SL, double *x, int nx, int ny, double erro, int itr) {
 	double norma, diff, xk;
-	int k = 1, i;
+	int k = 1, i, qtdeEquacao, pontosCalcular;
+
+	qtdeEquacao = nx * ny;
 
 	do {
 
 		/* Primeira Equação (Ponto Superior Esquerdo) */
 		i = 0;
-		xk = (SL->b[i] - SL->superior[i]*x[i+1] - SL->inferiorAfastada[i]*x[n-1]) / SL->principal[i];
+		xk = (SL->b[i] - SL->superior[i]*x[i+1] - SL->inferiorAfastada[i]*x[qtdeEquacao-1]) / SL->principal[i];
 		norma = fabs(xk - x[0]);
 		x[i] = xk;
 
@@ -306,21 +305,69 @@ void gaussSeidel (sL *SL, double *x, double n, double erro) {
 		norma = fabs(xk - x[i - 1]);
 		x[i] = xk;
 
-		// equações centrais
-		for (i=1; i<25; ++i) {
-			xk = (SL->b[i] - SL->superior[i]*x[i+1]- SL->inferior[i]*x[i-1]) / SL->principal[i];
+		pontosCalcular = (i + 1) + (nx - 2);
+		/* Loop para cálculo das equações dos pontos da Borda Inferior*/
+		for (int j = i + 1; j < pontosCalcular; j++)	{
+			xk = (SL->b[j] - (SL->superior[j]*x[j+1] + SL->superiorAfastada[j]*x[j+1]) - SL->inferior[j]*x[j-1]) / SL->principal[j];
 			// Calcula norma || x (k) – x (k – 1) ||
-			diff = fabs(xk - x[i]);
+			diff = fabs(xk - x[j]);
 			norma = (diff > norma) ? (diff) : (norma);
-			x[i] = xk;
+			x[j] = xk;
+			i++;
 		}
 
-		// ultima equação fora do laço
-		xk = (SL->b[i] - SL->inferior[i]*x[i-1]) / SL->principal[i];
+		pontosCalcular = (i + 1) + (nx - 2);
+		/* Loop para cálculo das equações dos pontos da Borda Superior*/
+		for (int j = i + 1; j < pontosCalcular; j++)	{	
+			xk = (SL->b[j] - SL->superior[j]*x[j+1] - (SL->inferior[j]*x[j-1] + SL->inferiorAfastada[j]*x[j-1])) / SL->principal[j];
+			// Calcula norma || x (k) – x (k – 1) ||
+			diff = fabs(xk - x[j]);
+			norma = (diff > norma) ? (diff) : (norma);
+			x[j] = xk;
+			i++;
+		}
+
+		pontosCalcular = (i + 1) + (ny - 2);
+		/* Loop para cálculo das equações dos pontos da Borda a Esquerda*/
+		for (int j = i + 1; j < pontosCalcular; j++)	{	
+			xk = (SL->b[j] - (SL->superior[j]*x[j+1] + SL->superiorAfastada[j]*x[j+1]) - SL->inferiorAfastada[j]*x[j-1]) / SL->principal[j];
+			// Calcula norma || x (k) – x (k – 1) ||
+			diff = fabs(xk - x[j]);
+			norma = (diff > norma) ? (diff) : (norma);
+			x[j] = xk;
+			i++;
+		}
+
+		pontosCalcular = (i + 1) + (ny - 2);
+		/* Loop para cálculo das equações dos pontos da Borda a Direita*/
+		for (int j = i + 1; j < pontosCalcular; j++)	{	
+			xk = (SL->b[j] - SL->superiorAfastada[j]*x[j+1] - (SL->inferior[j]*x[j-1] + SL->inferiorAfastada[j]*x[j-1])) / SL->principal[j];
+			// Calcula norma || x (k) – x (k – 1) ||
+			diff = fabs(xk - x[j]);
+			norma = (diff > norma) ? (diff) : (norma);
+			x[j] = xk;
+			i++;
+		}
+
+		/* Loop para cálculo das equações dos pontos internos*/
+		for (int j = i + 1; j < (nx * ny) - 1; j++)	{	
+			xk = (SL->b[j] - ((SL->superiorAfastada[j]*x[j+1] + SL->superior[j]*x[j+1]) - (SL->inferior[j]*x[j-1] + SL->inferiorAfastada[j]*x[j-1]))) / SL->principal[j];
+			// Calcula norma || x (k) – x (k – 1) ||
+			diff = fabs(xk - x[j]);
+			norma = (diff > norma) ? (diff) : (norma);
+			x[j] = xk;
+			i++;
+		}
+
+		i++;
+		xk = (SL->b[i] - ((SL->superiorAfastada[i]*x[i+1] + SL->superior[i]*x[i+1]) - (SL->inferior[i]*x[i-1] + SL->inferiorAfastada[i]*x[i-1]))) / SL->principal[i];
+		// Calcula norma || x (k) – x (k – 1) ||
 		diff = fabs(xk - x[i]);
 		norma = (diff > norma) ? (diff) : (norma);
 		x[i] = xk;
 
 		++k;
-	} while (norma > erro && k < MAXIT);
+	} while (norma > erro && k < itr);
+
+	printf("Encontrei o resultado em %d iterações\n", k);
 }

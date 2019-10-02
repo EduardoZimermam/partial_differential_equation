@@ -28,15 +28,24 @@ int main(int argc, char **argv){
 	}
 	else {
 		
+		double  *x, erro;
 		double hx, hy, n;
-		sL sistemaLinear;
+		sL *sistemaLinear;
 
+		x = alocaVetor(nx * ny);
+		
 		hx = M_PI / nx;
 		hy = M_PI / ny;
 		n = 4 * (M_PI * M_PI);
 
-		calculaEquacaoDiferencialParcial(hx, hy, n, nx, ny, &sistemaLinear);
+		sistemaLinear = calculaEquacaoDiferencialParcial(hx, hy, n, nx, ny);
 
+		gaussSeidel(sistemaLinear, x, nx, ny, erro, itr);
+
+		for (int i = 0; i < ny * nx; ++i) {
+			printf("x[%d]= %.15lf\n",i, x[i]);
+		}
+	
 		return(0);
 	}
 }
