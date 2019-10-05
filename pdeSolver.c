@@ -15,7 +15,7 @@
 
 int main(int argc, char **argv){
 
-	int nx, ny, itr, param;
+	int nx, ny, itr, param, returnGauss;
 	char caminhoSaida[200];
 	sL sistemaLinear;
 
@@ -40,12 +40,15 @@ int main(int argc, char **argv){
 
 		sistemaLinear = calculaEquacaoDiferencialParcial(hx, hy, n, nx, ny);
 
-		gaussSeidel(sistemaLinear, x, nx, ny, erro, itr);
+		erro = 1.0e-4;
 
-		for (int i = 0; i < ny * nx; ++i) {
-			printf("x[%d]= %.15lf\n",i, x[i]);
+		returnGauss = gaussSeidel(sistemaLinear, x, nx, ny, erro, itr);
+
+		if (returnGauss == 0){
+			return 0;
+		} else {
+			fprintf(stderr, "ERRO: O Método de Gauss Seidel não convergiu na quantidade de iterações específicada. PROGRAMA ABORTADA A EXECUÇÃO!\n");
+			return -1;
 		}
-	
-		return(0);
 	}
 }

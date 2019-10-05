@@ -22,6 +22,7 @@ double* alocaVetor(int tamVetor);
 double limiteSuperior(double x);
 double limiteInferior(double x);
 double calculaFuncao(double x, double y);
-void gaussSeidel (sL *SL, double *x, int nx, int ny, double erro, int itr);
+double normaL2Residuo(sL *SL, double *x, int nx, int ny);
+int gaussSeidel (sL *SL, double *x, int nx, int ny, double erro, int itr);
 
 #endif
