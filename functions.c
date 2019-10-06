@@ -191,7 +191,7 @@ sL* calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, 
 	idx++;
 
 	/*Cálculo dos Pontos internos da malha*/
-	for (int i = 2; i <= nx - 1; i++)	{
+	for (int i = 2; i <= ny - 1; i++)	{
 		
 		/* Cálculo do ponto da borda da esquerda */
 		sistemaLinear->superiorAfastada[idx] = cima;
@@ -202,7 +202,7 @@ sL* calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, 
 		sistemaLinear->b[idx] = calculaFuncao((i * hy), (0.0 + hx)) - (0.0 * esquerda);
 		idx++;
 
-		for (int j = 2; j <= ny - 1; j++) {
+		for (int j = 2; j <= nx - 1; j++) {
 			sistemaLinear->superiorAfastada[idx] = cima;
 			sistemaLinear->superior[idx] = direita;
 			sistemaLinear->principal[idx] = central;
