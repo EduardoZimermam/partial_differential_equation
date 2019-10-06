@@ -11,13 +11,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 #include "functions.h"
 
 int main(int argc, char **argv){
 
-	int nx, ny, itr, param, returnGauss;
-	char caminhoSaida[200];
+	int nx, ny, itr, param, itrConverge;
+	char *caminhoSaida;
 	sL sistemaLinear;
+
+	caminhoSaida = malloc(200 * sizeof(char));
 
 	param = getParametros (argc, argv, &nx, &ny, &itr, caminhoSaida);
 
@@ -28,8 +31,7 @@ int main(int argc, char **argv){
 	}
 	else {
 		
-		double  *x, erro;
-		double hx, hy, n;
+		double  *x, *tempoItr, *normaL2Itr, erro, hx, hy, n;
 		sL *sistemaLinear;
 
 		x = alocaVetor(nx * ny);
@@ -42,9 +44,15 @@ int main(int argc, char **argv){
 
 		erro = 1.0e-4;
 
-		returnGauss = gaussSeidel(sistemaLinear, x, nx, ny, erro, itr);
+		normaL2Itr = alocaVetor(itr);
+		tempoItr = alocaVetor(itr);
 
-		if (returnGauss == 0){
+		itrConverge = gaussSeidel(sistemaLinear, x, nx, ny, erro, itr, tempoItr, normaL2Itr);
+
+		if (itrConverge > 0){
+
+			printResultado(tempoItr, normaL2Itr, itrConverge, caminhoSaida);
+
 			return 0;
 		} else {
 			fprintf(stderr, "ERRO: O Método de Gauss Seidel não convergiu na quantidade de iterações específicada. PROGRAMA ABORTADA A EXECUÇÃO!\n");

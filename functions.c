@@ -13,7 +13,7 @@
 #include <math.h>
 
 #include "functions.h"
-
+#include "utils.h"
 
 
 /**
@@ -23,7 +23,7 @@
  * @param nx      Número de pontos a serem calculados na dimensão X.
  * @param ny      Número de pontos a serem calculados na dimensão Y.
  * @param itr  	  Número de iterações a serem executadas.
- * @param caminhoSaida  Caminho da solução.
+ * @param caminhoSaida  Caminho para escrever a solução final.
  * @return Retorna os valores passados por entrada padrão.
  *
  * Considera todas as condições de entrada das variáveis.
@@ -134,8 +134,7 @@ double calculaFuncao(double x, double y) {
  * @param n Parte do cálculo para a solução de discretização da malha.
  * @param nx Número de pontos a serem calculados na dimensão X.
  * @param ny Número de pontos a serem calculados na dimensão Y.
- * @param sistenaLinear Struct do sistema linear a ser montado.
- * @return Preenche os vetores com os valores dos pontos da malha.
+ * @return Preenche os vetores de diagonais do sistema linear.
  */
 sL* calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, double ny) {
 	double esquerda, direita, cima, baixo, central, bordaSuperior, bordaInferior;
@@ -255,65 +254,56 @@ sL* calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, 
 	sistemaLinear->b[idx] = calculaFuncao((M_PI - hx), (M_PI - hy)) - (0.0 * direita) - (bordaSuperior * cima);
 	idx++;
 
-	// for (int i = 0; i < (nx * ny); ++i){
-	// 	printf("%.5lf ", sistemaLinear->superiorAfastada[i]);
-	// }
-
-	// printf("\n");
-
-	// for (int i = 0; i < (nx * ny); ++i){
-	// 	printf("%.5lf ", sistemaLinear->superior[i]);
-	// }
-
-	// printf("\n");
-
-	// for (int i = 0; i < (nx * ny); ++i){
-	// 	printf("%.5lf ", sistemaLinear->principal[i]);
-	// }
-
-	// printf("\n");
-
-	// for (int i = 0; i < (nx * ny); ++i){
-	// 	printf("%.5lf ", sistemaLinear->inferior[i]);
-	// }
-
-	// printf("\n");
-
-	// for (int i = 0; i < (nx * ny); ++i){
-	// 	printf("%.5lf ", sistemaLinear->inferiorAfastada[i]);
-	// }
-
-	for (int i = 0; i < (nx * ny); ++i){
-		printf("%.5lf %.5lf %.5lf %.5lf %.5lf\n", sistemaLinear->inferiorAfastada[i], sistemaLinear->inferior[i], sistemaLinear->principal[i], sistemaLinear->superior[i], sistemaLinear->superiorAfastada[i]); 
-	}
-
-	printf("\n");
-
 	return (sistemaLinear);
 }
 
 /**
- * @brief Cálculo da norma L2 do Resíduo.
+ * @brief Cálculo do resíduo e da norma L2 do mesmo.
  * @param SL Ponteiro para o sistema linear
- * @param x Vetor de .
+ * @param x Vetor de incógnitas.
  * @param nx Número de pontos a serem calculados na dimensão X.
  * @param ny Número de pontos a serem calculados na dimensão Y.
  *
  * @return Retorna o cálculo na norma Euclidiana.
  */
-double normaL2Residuo(sL *SL, double *x, int nx, int ny){ 
+double normaL2Residuo(sL *sistemaLinear, double *x, int nx, int ny){ 
 
-	double residuo, normaL2, multiplicacao;
+	double *residuo, normaL2, multiplicacao;
+	int i = 0;
 
-	// residuo = alocaVetor(nx * ny);
+	residuo = alocaVetor(nx * ny);
 
+	multiplicacao = sistemaLinear->principal[i] * x[i] + sistemaLinear->superior[i] * x[i + 1] + sistemaLinear->superiorAfastada[i] * x[i + 3];
+	residuo[i] = sistemaLinear->b[i] - multiplicacao;
+	i++;
 
-	// multiplicacao = sL->inferiorAfastada[i] * x[?] +  sL->inferior[i] * x[?] + sL->principal[i] * x[?] + sL->superior[i] * x[?] + sL->superiorAfastada[i] * x[?];
+	multiplicacao = sistemaLinear->inferior[i] * x[i - 1] + sistemaLinear->principal[i] * x[i] + sistemaLinear->superior[i] * x[i + 1] + sistemaLinear->superiorAfastada[i] * x[i + 3];
+	residuo[i] = sistemaLinear->b[i] - multiplicacao;
+	i++;
 
-	// for (int i = 0; i < (nx * ny); i++){
-	// 	residuo[i] = (SL->b[i] - A[?] * x[i]);
-	// 	normaL2 += residuo[i]*residuo[i];
-	// }
+	multiplicacao = sistemaLinear->inferior[i] * x[i - 1] + sistemaLinear->principal[i] * x[i] + sistemaLinear->superior[i] * x[i + 1] + sistemaLinear->superiorAfastada[i] * x[i + 3];
+	residuo[i] = sistemaLinear->b[i] - multiplicacao;
+	i++;
+
+	for (i = 3; i < (nx * ny) - 3; i++){
+		multiplicacao = sistemaLinear->inferiorAfastada[i] * x[i - 3] +  sistemaLinear->inferior[i] * x[i - 1] + sistemaLinear->principal[i] * x[i] + sistemaLinear->superior[i] * x[i + 1] + sistemaLinear->superiorAfastada[i] * x[i + 3];
+		residuo[i] = sistemaLinear->b[i] - multiplicacao;
+	}
+
+	multiplicacao = sistemaLinear->inferiorAfastada[i] * x[i - 3] +  sistemaLinear->inferior[i] * x[i - 1] + sistemaLinear->principal[i] * x[i] + sistemaLinear->superior[i] * x[i + 1];
+	residuo[i] = sistemaLinear->b[i] - multiplicacao;
+	i++;
+
+	multiplicacao = sistemaLinear->inferiorAfastada[i] * x[i - 3] +  sistemaLinear->inferior[i] * x[i - 1] + sistemaLinear->principal[i] * x[i] + sistemaLinear->superior[i] * x[i + 1];
+	residuo[i] = sistemaLinear->b[i] - multiplicacao;
+	i++;
+
+	multiplicacao = sistemaLinear->inferiorAfastada[i] * x[i - 3] +  sistemaLinear->inferior[i] * x[i - 1] + sistemaLinear->principal[i] * x[i];
+	residuo[i] = sistemaLinear->b[i] - multiplicacao;
+
+	for (i = 0; i < (nx * ny); ++i){
+		normaL2 += (residuo[i] * residuo[i]);
+	}
 
 	return sqrt(normaL2);
 }
@@ -321,19 +311,25 @@ double normaL2Residuo(sL *SL, double *x, int nx, int ny){
 /**
  * @brief Método de Gauss-Seidel
  * @param SL Ponteiro para o sistema linear
- * @param x ponteiro para o vetor solução
- * @param erro menor erro aproximado para encerrar as iterações
+ * @param x ponteiro para o vetor solução.
+ * @param nx Número de pontos a serem calculados na dimensão X.
+ * @param ny Número de pontos a serem calculados na dimensão Y.
+ * @param erro menor erro aproximado para encerrar as iterações.
+ * @param tempoItr vetor dos tempos de cara iteração.
+ * @param normaL2Itr vetor da norma L2 do resíduo de cada iteração.
  *
- * @return Retorna
+ * @return Retorna o total de iterações efetuadas se convergiu, ou -1 se houve erro.
  */
-int gaussSeidel (sL *SL, double *x, int nx, int ny, double erro, int itr) {
-	double norma, diff, xk;
+int gaussSeidel (sL *SL, double *x, int nx, int ny, double erro, int itr, double *tempoItr, double *normaL2Itr) {
+	double norma, diff, xk, inicio, fim;
 	int i, k = 0;
 
 	norma = erro + 1.0;
 
 	while (k < itr && norma > erro) {
 		i = 0;
+
+		inicio = timestamp();
 		
 		xk = (SL->b[i] - (SL->superior[i]*x[i+1] + SL->superiorAfastada[i]*x[i+1])) / SL->principal[i];
 		norma = fabs(xk - x[i]);
@@ -352,13 +348,56 @@ int gaussSeidel (sL *SL, double *x, int nx, int ny, double erro, int itr) {
 		norma = (diff > norma) ? (diff) : (norma);
 		x[i] = xk;
 
+		fim = timestamp();
+
+		normaL2Itr[k] = normaL2Residuo(SL, x, nx, ny);
+		tempoItr[k] = fim - inicio;
+		
 		++k;
 	}
 
 	if (k < itr){
-		return 0;
+		return k;
 	} else {
 		return -1;
 	}
 }
-	
+
+
+/**
+ * @brief Escreve resultado na saída desejada.
+ * @param tempoItr vetor dos tempos de cara iteração.
+ * @param normaL2Itr vetor da norma L2 do resíduo de cada iteração.
+ * @param itrConverge número de iterações realizadas.
+ * @param caminhoSaida ponteiro para o caminho do arquivo de saída.
+ *
+ * @return Retorna a escrita do resultado no arquivo de saída ou no stdout.
+ */
+void printResultado(double *tempoItr, double *normaL2Itr, int itrConverge, char *caminhoSaida){
+
+	FILE *arquivoSaida;
+	double somaTempo, tempoMedioGS;
+
+	if (strlen(caminhoSaida) == 0)
+		arquivoSaida = stdout;
+	else
+		arquivoSaida = fopen(caminhoSaida, "w");
+
+
+	for (int i = 0; i < itrConverge; ++i){
+		somaTempo += tempoItr[i];
+	}
+
+	tempoMedioGS = somaTempo / itrConverge;
+
+	fprintf(arquivoSaida, "###########\n");
+	fprintf(arquivoSaida, "# Tempo Método GS: %lf\n", tempoMedioGS);
+	fprintf(arquivoSaida, "#\n");
+	fprintf(arquivoSaida, "# Norma L2 do Residuo\n");
+
+	for (int i = 0; i < itrConverge; ++i){
+		fprintf(arquivoSaida, "# i=%d: %.15lf\n", i + 1, normaL2Itr[i]);
+	}
+
+	fprintf(arquivoSaida, "###########\n");
+}
