@@ -18,7 +18,6 @@ int main(int argc, char **argv){
 
 	int nx, ny, itr, param, itrConverge;
 	char *caminhoSaida;
-	sL sistemaLinear;
 
 	caminhoSaida = malloc(200 * sizeof(char));
 
@@ -33,30 +32,26 @@ int main(int argc, char **argv){
 		
 		double  *x, *tempoItr, *normaL2Itr, erro, hx, hy, n;
 		sL *sistemaLinear;
+		ponto *pontosSL;
 
 		x = alocaVetor(nx * ny);
+		pontosSL = malloc(sizeof(ponto));
+		pontosSL->x = alocaVetor(nx * ny);
+		pontosSL->y = alocaVetor(nx * ny);
 		
 		hx = M_PI / nx;
 		hy = M_PI / ny;
 		n = 4 * (M_PI * M_PI);
 
-		sistemaLinear = calculaEquacaoDiferencialParcial(hx, hy, n, nx, ny);
+		sistemaLinear = calculaEquacaoDiferencialParcial(hx, hy, n, nx, ny, pontosSL);
 
 		erro = 1.0e-4;
 
 		normaL2Itr = alocaVetor(itr);
 		tempoItr = alocaVetor(itr);
 
-		itrConverge = gaussSeidel(sistemaLinear, x, nx, ny, erro, itr, tempoItr, normaL2Itr);
-
-		if (itrConverge > 0){
-
-			printResultado(tempoItr, normaL2Itr, itrConverge, caminhoSaida);
-
-			return 0;
-		} else {
-			fprintf(stderr, "ERRO: O Método de Gauss Seidel não convergiu na quantidade de iterações específicada. PROGRAMA ABORTADA A EXECUÇÃO!\n");
-			return -1;
-		}
+		gaussSeidel(sistemaLinear, x, nx, ny, erro, itr, tempoItr, normaL2Itr);
+		
+		printResultado(tempoItr, normaL2Itr, itrConverge, (nx * ny), pontosSL, caminhoSaida, x);
 	}
 }

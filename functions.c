@@ -136,7 +136,7 @@ double calculaFuncao(double x, double y) {
  * @param ny Número de pontos a serem calculados na dimensão Y.
  * @return Preenche os vetores de diagonais do sistema linear.
  */
-sL* calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, double ny) {
+sL* calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, double ny, ponto *pontosSL) {
 	double esquerda, direita, cima, baixo, central, bordaSuperior, bordaInferior;
 	int idx = 0;
 	sL *sistemaLinear;
@@ -165,7 +165,9 @@ sL* calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, 
 	sistemaLinear->principal[idx] = central;
 	sistemaLinear->inferior[idx] = 0.0;
 	sistemaLinear->inferiorAfastada[idx] = 0.0;
-	sistemaLinear->b[idx] = calculaFuncao(hx, hy) - (0.0 * esquerda) - (bordaInferior * baixo);
+	pontosSL->x[idx] = hx;
+	pontosSL->y[idx] = hy;
+	sistemaLinear->b[idx] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (0.0 * esquerda) - (bordaInferior * baixo);
 	idx++;
 
 	/*Cálculo dos pontos da Borda Inferior*/
@@ -176,7 +178,9 @@ sL* calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, 
 		sistemaLinear->principal[idx] = central;
 		sistemaLinear->inferior[idx] = esquerda;
 		sistemaLinear->inferiorAfastada[idx] = 0.0;
-		sistemaLinear->b[idx] = calculaFuncao((i * hx), (0.0 + hy)) - (bordaInferior * baixo);
+		pontosSL->x[idx] = i * hx;
+		pontosSL->y[idx] = hy;
+		sistemaLinear->b[idx] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (bordaInferior * baixo);
 		idx++;
 	}
 
@@ -187,7 +191,9 @@ sL* calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, 
 	sistemaLinear->principal[idx] = central;
 	sistemaLinear->inferior[idx] = esquerda;
 	sistemaLinear->inferiorAfastada[idx] = 0.0;
-	sistemaLinear->b[idx] = calculaFuncao((M_PI - hx), (0.0 + hy)) - (0.0 * direita) - (bordaInferior * baixo);
+	pontosSL->x[idx] = M_PI - hx;
+	pontosSL->y[idx] = hy;
+	sistemaLinear->b[idx] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (0.0 * direita) - (bordaInferior * baixo);
 	idx++;
 
 	/*Cálculo dos Pontos internos da malha*/
@@ -199,7 +205,9 @@ sL* calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, 
 		sistemaLinear->principal[idx] = central;
 		sistemaLinear->inferior[idx] = 0.0;
 		sistemaLinear->inferiorAfastada[idx] = baixo;
-		sistemaLinear->b[idx] = calculaFuncao((i * hy), (0.0 + hx)) - (0.0 * esquerda);
+		pontosSL->x[idx] = hx;
+		pontosSL->y[idx] = i * hy;
+		sistemaLinear->b[idx] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (0.0 * esquerda);
 		idx++;
 
 		for (int j = 2; j <= nx - 1; j++) {
@@ -208,7 +216,9 @@ sL* calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, 
 			sistemaLinear->principal[idx] = central;
 			sistemaLinear->inferior[idx] = esquerda;
 			sistemaLinear->inferiorAfastada[idx] = baixo;
-			sistemaLinear->b[idx] = calculaFuncao((i * hx), (j * hy));
+			pontosSL->x[idx] = i * hx;
+			pontosSL->y[idx] = j * hy;
+			sistemaLinear->b[idx] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]);
 			idx++;
 		}
 
@@ -218,7 +228,9 @@ sL* calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, 
 		sistemaLinear->principal[idx] = central;
 		sistemaLinear->inferior[idx] = esquerda;
 		sistemaLinear->inferiorAfastada[idx] = baixo;
-		sistemaLinear->b[idx] = calculaFuncao((i * hy), (M_PI - hx)) - (0.0 * direita);
+		pontosSL->x[idx] = M_PI - hx;
+		pontosSL->y[idx] = i * hy;
+		sistemaLinear->b[idx] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (0.0 * direita);
 		idx++;
 	}
 
@@ -229,7 +241,9 @@ sL* calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, 
 	sistemaLinear->principal[idx] = central;
 	sistemaLinear->inferior[idx] = 0.0;
 	sistemaLinear->inferiorAfastada[idx] = baixo;
-	sistemaLinear->b[idx] = calculaFuncao(hx, (M_PI - hy)) - (0.0 * esquerda) - (bordaSuperior * cima);
+	pontosSL->x[idx] = hx;
+	pontosSL->y[idx] = M_PI - hy;
+	sistemaLinear->b[idx] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (0.0 * esquerda) - (bordaSuperior * cima);
 	idx++;
 
 	/*Cálculo dos pontos da Borda Superior*/
@@ -240,7 +254,9 @@ sL* calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, 
 		sistemaLinear->principal[idx] = central;
 		sistemaLinear->inferior[idx] = esquerda;
 		sistemaLinear->inferiorAfastada[idx] = baixo;
-		sistemaLinear->b[idx] = calculaFuncao((i * hx), (M_PI - hy)) - (bordaSuperior * cima);
+		pontosSL->x[idx] = i * hx;
+		pontosSL->y[idx] = M_PI - hy;
+		sistemaLinear->b[idx] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (bordaSuperior * cima);
 		idx++;
 	}
 
@@ -251,7 +267,9 @@ sL* calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, 
 	sistemaLinear->principal[idx] = central;
 	sistemaLinear->inferior[idx] = esquerda;
 	sistemaLinear->inferiorAfastada[idx] = baixo;
-	sistemaLinear->b[idx] = calculaFuncao((M_PI - hx), (M_PI - hy)) - (0.0 * direita) - (bordaSuperior * cima);
+	pontosSL->x[idx] = M_PI - hx;
+	pontosSL->y[idx] = M_PI - hy;
+	sistemaLinear->b[idx] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (0.0 * direita) - (bordaSuperior * cima);
 	idx++;
 
 	return (sistemaLinear);
@@ -373,7 +391,7 @@ int gaussSeidel (sL *SL, double *x, int nx, int ny, double erro, int itr, double
  *
  * @return Retorna a escrita do resultado no arquivo de saída ou no stdout.
  */
-void printResultado(double *tempoItr, double *normaL2Itr, int itrConverge, char *caminhoSaida){
+void printResultado(double *tempoItr, double *normaL2Itr, int itrConverge, int tam, ponto *pontosSL, char *caminhoSaida, double *x){
 
 	FILE *arquivoSaida;
 	double somaTempo, tempoMedioGS;
@@ -399,5 +417,13 @@ void printResultado(double *tempoItr, double *normaL2Itr, int itrConverge, char 
 		fprintf(arquivoSaida, "# i=%d: %.15lf\n", i + 1, normaL2Itr[i]);
 	}
 
-	fprintf(arquivoSaida, "###########\n");
+	fprintf(arquivoSaida, "###########\n\n");
+
+	/*print de todos os pontos da malha*/
+
+	for (int i = 0; i < tam; ++i){
+		fprintf(arquivoSaida, "%.15lf %.15lf %.15lf\n", pontosSL->x[i], pontosSL->y[i], x[i]);
+	}	
+
+
 }
