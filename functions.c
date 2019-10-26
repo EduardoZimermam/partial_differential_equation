@@ -134,6 +134,7 @@ double calculaFuncao(double x, double y) {
  * @param n Parte do cálculo para a solução de discretização da malha.
  * @param nx Número de pontos a serem calculados na dimensão X.
  * @param ny Número de pontos a serem calculados na dimensão Y.
+ * @param pontosSL Estrutura que guarda cada ponto discretizado na malha
  * @return Preenche os vetores de diagonais do sistema linear.
  */
 sL* calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, double ny, ponto *pontosSL) {
@@ -172,7 +173,7 @@ sL* calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, 
 
 	/*Cálculo dos pontos da Borda Inferior*/
 	for (int i = 2; i <= nx - 1; i++)	{
-		bordaInferior = limiteInferior(i);
+		bordaInferior = limiteInferior(i * hx);
 		sistemaLinear->superiorAfastada[idx] = cima;
 		sistemaLinear->superior[idx] = direita;
 		sistemaLinear->principal[idx] = central;
@@ -216,8 +217,8 @@ sL* calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, 
 			sistemaLinear->principal[idx] = central;
 			sistemaLinear->inferior[idx] = esquerda;
 			sistemaLinear->inferiorAfastada[idx] = baixo;
-			pontosSL->x[idx] = i * hx;
-			pontosSL->y[idx] = j * hy;
+			pontosSL->x[idx] = j * hx;
+			pontosSL->y[idx] = i * hy;
 			sistemaLinear->b[idx] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]);
 			idx++;
 		}
@@ -270,14 +271,13 @@ sL* calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, 
 	pontosSL->x[idx] = M_PI - hx;
 	pontosSL->y[idx] = M_PI - hy;
 	sistemaLinear->b[idx] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (0.0 * direita) - (bordaSuperior * cima);
-	idx++;
 
 	return (sistemaLinear);
 }
 
 /**
  * @brief Cálculo do resíduo e da norma L2 do mesmo.
- * @param SL Ponteiro para o sistema linear
+ * @param sistemaLinear Ponteiro para o sistema linear
  * @param x Vetor de incógnitas.
  * @param nx Número de pontos a serem calculados na dimensão X.
  * @param ny Número de pontos a serem calculados na dimensão Y.
@@ -291,32 +291,24 @@ double normaL2Residuo(sL *sistemaLinear, double *x, int nx, int ny){
 
 	residuo = alocaVetor(nx * ny);
 
-	multiplicacao = sistemaLinear->principal[i] * x[i] + sistemaLinear->superior[i] * x[i + 1] + sistemaLinear->superiorAfastada[i] * x[i + 3];
+	multiplicacao = sistemaLinear->principal[i] * x[i] + sistemaLinear->superior[i] * x[i + 1] + sistemaLinear->superiorAfastada[i] * x[i + (nx - 1)];
 	residuo[i] = sistemaLinear->b[i] - multiplicacao;
-	i++;
 
-	multiplicacao = sistemaLinear->inferior[i] * x[i - 1] + sistemaLinear->principal[i] * x[i] + sistemaLinear->superior[i] * x[i + 1] + sistemaLinear->superiorAfastada[i] * x[i + 3];
-	residuo[i] = sistemaLinear->b[i] - multiplicacao;
-	i++;
+	for (i = 1; i < (nx * ny) - 1; i++)	{
 
-	multiplicacao = sistemaLinear->inferior[i] * x[i - 1] + sistemaLinear->principal[i] * x[i] + sistemaLinear->superior[i] * x[i + 1] + sistemaLinear->superiorAfastada[i] * x[i + 3];
-	residuo[i] = sistemaLinear->b[i] - multiplicacao;
-	i++;
-
-	for (i = 3; i < (nx * ny) - 3; i++){
-		multiplicacao = sistemaLinear->inferiorAfastada[i] * x[i - 3] +  sistemaLinear->inferior[i] * x[i - 1] + sistemaLinear->principal[i] * x[i] + sistemaLinear->superior[i] * x[i + 1] + sistemaLinear->superiorAfastada[i] * x[i + 3];
-		residuo[i] = sistemaLinear->b[i] - multiplicacao;
+		if ((i - (nx - 1)) < 0){
+			multiplicacao = sistemaLinear->principal[i] * x[i] + sistemaLinear->inferior[i] * x[i - 1] + sistemaLinear->superior[i] * x[i + 1] + sistemaLinear->superiorAfastada[i] * x[i + (nx - 1)];
+			residuo[i] = sistemaLinear->b[i] - multiplicacao;
+		} else if ((i + (nx - 1)) > (nx * ny)) {
+			multiplicacao = sistemaLinear->principal[i] * x[i] + sistemaLinear->inferiorAfastada[i] * x[i - (nx - 1)] + sistemaLinear->inferior[i] * x[i - 1] + sistemaLinear->superior[i] * x[i + 1];
+			residuo[i] = sistemaLinear->b[i] - multiplicacao;
+		} else {
+			multiplicacao = sistemaLinear->principal[i] * x[i] + sistemaLinear->inferiorAfastada[i] * x[i - (nx - 1)] + sistemaLinear->inferior[i] * x[i - 1] + sistemaLinear->superior[i] * x[i + 1] + sistemaLinear->superiorAfastada[i] * x[i + (nx - 1)];
+			residuo[i] = sistemaLinear->b[i] - multiplicacao;
+		}
 	}
 
-	multiplicacao = sistemaLinear->inferiorAfastada[i] * x[i - 3] +  sistemaLinear->inferior[i] * x[i - 1] + sistemaLinear->principal[i] * x[i] + sistemaLinear->superior[i] * x[i + 1];
-	residuo[i] = sistemaLinear->b[i] - multiplicacao;
-	i++;
-
-	multiplicacao = sistemaLinear->inferiorAfastada[i] * x[i - 3] +  sistemaLinear->inferior[i] * x[i - 1] + sistemaLinear->principal[i] * x[i] + sistemaLinear->superior[i] * x[i + 1];
-	residuo[i] = sistemaLinear->b[i] - multiplicacao;
-	i++;
-
-	multiplicacao = sistemaLinear->inferiorAfastada[i] * x[i - 3] +  sistemaLinear->inferior[i] * x[i - 1] + sistemaLinear->principal[i] * x[i];
+	multiplicacao = sistemaLinear->principal[i] * x[i] + sistemaLinear->inferiorAfastada[i] * x[i - (nx - 1)] + sistemaLinear->inferior[i] * x[i - 1];
 	residuo[i] = sistemaLinear->b[i] - multiplicacao;
 
 	for (i = 0; i < (nx * ny); ++i){
@@ -332,38 +324,41 @@ double normaL2Residuo(sL *sistemaLinear, double *x, int nx, int ny){
  * @param x ponteiro para o vetor solução.
  * @param nx Número de pontos a serem calculados na dimensão X.
  * @param ny Número de pontos a serem calculados na dimensão Y.
- * @param erro menor erro aproximado para encerrar as iterações.
+ * @param itr Número máximo de iterações que o método pode executar
  * @param tempoItr vetor dos tempos de cara iteração.
  * @param normaL2Itr vetor da norma L2 do resíduo de cada iteração.
  *
  * @return Retorna o total de iterações efetuadas se convergiu, ou -1 se houve erro.
  */
-int gaussSeidel (sL *SL, double *x, int nx, int ny, double erro, int itr, double *tempoItr, double *normaL2Itr) {
+int gaussSeidel (sL *SL, double *x, int nx, int ny, int itr, double *tempoItr, double *normaL2Itr) {
 	double norma, diff, xk, inicio, fim;
 	int i, k = 0;
 
-	norma = erro + 1.0;
-
-	while (k < itr && norma > erro) {
+	while (k < itr) {
 		i = 0;
 
 		inicio = timestamp();
 		
-		xk = (SL->b[i] - (SL->superior[i]*x[i+1] + SL->superiorAfastada[i]*x[i+1])) / SL->principal[i];
+		xk = (SL->b[i] - (SL->superior[i]*x[i+1] + SL->superiorAfastada[i]*x[i + (nx - 1)])) / SL->principal[i];
 		norma = fabs(xk - x[i]);
 		x[i] = xk;
 
 
-		for (i = 1; i < (nx * ny) - 1; i++)	{	
-			xk = (SL->b[i] - ((SL->superiorAfastada[i]*x[i+1] + SL->superior[i]*x[i+1]) - (SL->inferior[i]*x[i-1] + SL->inferiorAfastada[i]*x[i-1]))) / SL->principal[i];
-			// Calcula norma || x (k) – x (k – 1) ||
-			diff = fabs(xk - x[i]);
-			norma = (diff > norma) ? (diff) : (norma);
-			x[i] = xk;
+		for (i = 1; i < (nx * ny) - 1; i++)	{
+
+			if ((i - (nx - 1)) < 0){
+				xk = (SL->b[i] - ((SL->superiorAfastada[i]*x[i + (nx - 1)] + SL->superior[i]*x[i+1]) - SL->inferior[i]*x[i-1])) / SL->principal[i];
+				x[i] = xk;
+			} else if ((i + (nx - 1)) > (nx * ny)) {
+				xk = (SL->b[i] - (SL->superior[i]*x[i+1] - (SL->inferior[i]*x[i-1] + SL->inferiorAfastada[i]*x[i - (nx - 1)]))) / SL->principal[i];
+				x[i] = xk;				
+			} else {
+				xk = (SL->b[i] - ((SL->superiorAfastada[i]*x[i + (nx - 1)] + SL->superior[i]*x[i+1]) - (SL->inferior[i]*x[i-1] + SL->inferiorAfastada[i]*x[i - (nx - 1)]))) / SL->principal[i];
+				x[i] = xk;
+			}
 		}
 
-		xk = (SL->b[i] - (SL->inferior[i]*x[i-1] + SL->inferiorAfastada[i]*x[i-1])) / SL->principal[i];
-		norma = (diff > norma) ? (diff) : (norma);
+		xk = (SL->b[i] - (SL->inferior[i]*x[i-1] + SL->inferiorAfastada[i]*x[i- (nx - 1)])) / SL->principal[i];
 		x[i] = xk;
 
 		fim = timestamp();
@@ -374,11 +369,7 @@ int gaussSeidel (sL *SL, double *x, int nx, int ny, double erro, int itr, double
 		++k;
 	}
 
-	if (k < itr){
-		return k;
-	} else {
-		return -1;
-	}
+	return k;
 }
 
 
@@ -387,7 +378,10 @@ int gaussSeidel (sL *SL, double *x, int nx, int ny, double erro, int itr, double
  * @param tempoItr vetor dos tempos de cara iteração.
  * @param normaL2Itr vetor da norma L2 do resíduo de cada iteração.
  * @param itrConverge número de iterações realizadas.
+ * @param tam Tamanho da malha discretizada (Quantidade de pontos)
+ * @param pontosSL Estrutura que guarda o valor de cada ponto discretizado na malha
  * @param caminhoSaida ponteiro para o caminho do arquivo de saída.
+ * @param x Resultado após a solução do sistema linear pelo método de Gauss Seidel
  *
  * @return Retorna a escrita do resultado no arquivo de saída ou no stdout.
  */
@@ -424,6 +418,4 @@ void printResultado(double *tempoItr, double *normaL2Itr, int itrConverge, int t
 	for (int i = 0; i < tam; ++i){
 		fprintf(arquivoSaida, "%.15lf %.15lf %.15lf\n", pontosSL->x[i], pontosSL->y[i], x[i]);
 	}	
-
-
 }

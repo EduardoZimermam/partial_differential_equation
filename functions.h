@@ -27,7 +27,7 @@ double limiteSuperior(double x);
 double limiteInferior(double x);
 double calculaFuncao(double x, double y);
 double normaL2Residuo(sL *SL, double *x, int nx, int ny);
-int gaussSeidel (sL *SL, double *x, int nx, int ny, double erro, int itr, double *tempoItr, double *normaL2Itr);
+int gaussSeidel (sL *SL, double *x, int nx, int ny, int itr, double *tempoItr, double *normaL2Itr);
 void printResultado(double *tempoItr, double *normaL2Itr, int itrConverge, int tam, ponto *pontosSL, char *caminhoSaida, double *x);
 
 #endif

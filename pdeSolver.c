@@ -30,7 +30,7 @@ int main(int argc, char **argv){
 	}
 	else {
 		
-		double  *x, *tempoItr, *normaL2Itr, erro, hx, hy, n;
+		double  *x, *tempoItr, *normaL2Itr, hx, hy, n;
 		sL *sistemaLinear;
 		ponto *pontosSL;
 
@@ -39,18 +39,16 @@ int main(int argc, char **argv){
 		pontosSL->x = alocaVetor(nx * ny);
 		pontosSL->y = alocaVetor(nx * ny);
 		
-		hx = M_PI / nx;
-		hy = M_PI / ny;
+		hx = M_PI / (nx + 1);
+		hy = M_PI / (ny + 1);
 		n = 4 * (M_PI * M_PI);
 
 		sistemaLinear = calculaEquacaoDiferencialParcial(hx, hy, n, nx, ny, pontosSL);
 
-		erro = 1.0e-4;
-
 		normaL2Itr = alocaVetor(itr);
 		tempoItr = alocaVetor(itr);
 
-		gaussSeidel(sistemaLinear, x, nx, ny, erro, itr, tempoItr, normaL2Itr);
+		itrConverge = gaussSeidel(sistemaLinear, x, nx, ny, itr, tempoItr, normaL2Itr);
 		
 		printResultado(tempoItr, normaL2Itr, itrConverge, (nx * ny), pontosSL, caminhoSaida, x);
 	}
