@@ -1,18 +1,21 @@
-CC = gcc -g
-
 CFLAGS = -lm
+LFLAGS = -DLIKWID_PERFMON -I /home/soft/likwid/include -L /home/soft/likwid/lib -llikwid
 
-objs = pdeSolver.o functions.o utils.o
+OBJS = pdeSolver.o functions.o utils.o
 
 all: pdeSolver
 
-pdeSolver: $(objs) $(CFLAGS)
+pdeSolver: pdeSolver.o functions.o utils.o
+	gcc pdeSolver.o functions.o utils.o -o pdeSolver $(CFLAGS) $(LFLAGS)
 
-utils.o: utils.c
+pdeSolver.o: pdeSolver.c functions.h
+	gcc -c pdeSolver.c functions.h $(CFLAGS) $(LFLAGS)
 
-functions.o: functions.c
+functions.o: functions.c functions.h
+	gcc -c functions.c $(LFLAGS)
 
-pdeSolver.o: pdeSolver.c utils.o functions.o
+utils.o: utils.c utils.h
+	gcc -c utils.c
 
 doc: Doxyfile
 				doxygen $<
@@ -30,8 +33,8 @@ Doxyfile:
 		rm -f $@.new
 
 clean:
-	-rm -f $(objs) *~ pdeSolver
+	-rm -f $(OBJS) *~ pdeSolver
 	-rm -rf html
 
 purge:
-	-rm -f $(objs) *~
+	-rm -f $(OBJS) *~

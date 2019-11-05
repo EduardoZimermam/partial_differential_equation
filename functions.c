@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <likwid.h>
 
 #include "functions.h"
 #include "utils.h"
@@ -291,6 +292,7 @@ double normaL2Residuo(sL *sistemaLinear, double *x, int nx, int ny){
 
 	residuo = alocaVetor(nx * ny);
 
+	LIKWID_MARKER_START("teste");
 	multiplicacao = sistemaLinear->principal[i] * x[i] + sistemaLinear->superior[i] * x[i + 1] + sistemaLinear->superiorAfastada[i] * x[i + (nx - 1)];
 	residuo[i] = sistemaLinear->b[i] - multiplicacao;
 
@@ -314,6 +316,8 @@ double normaL2Residuo(sL *sistemaLinear, double *x, int nx, int ny){
 	for (i = 0; i < (nx * ny); ++i){
 		normaL2 += (residuo[i] * residuo[i]);
 	}
+
+	LIKWID_MARKER_STOP("teste");
 
 	return sqrt(normaL2);
 }

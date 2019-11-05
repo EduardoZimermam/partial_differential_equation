@@ -12,9 +12,11 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
+#include <likwid.h>
 #include "functions.h"
 
 int main(int argc, char **argv){
+	LIKWID_MARKER_INIT;
 
 	int nx, ny, itr, param, itrConverge;
 	char *caminhoSaida;
@@ -52,4 +54,6 @@ int main(int argc, char **argv){
 		
 		printResultado(tempoItr, normaL2Itr, itrConverge, (nx * ny), pontosSL, caminhoSaida, x);
 	}
+
+	LIKWID_MARKER_CLOSE;
 }
