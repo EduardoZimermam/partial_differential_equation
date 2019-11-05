@@ -292,7 +292,8 @@ double normaL2Residuo(sL *sistemaLinear, double *x, int nx, int ny){
 
 	residuo = alocaVetor(nx * ny);
 
-	LIKWID_MARKER_START("teste");
+	LIKWID_MARKER_START("CALCULO-RESIDUO");
+
 	multiplicacao = sistemaLinear->principal[i] * x[i] + sistemaLinear->superior[i] * x[i + 1] + sistemaLinear->superiorAfastada[i] * x[i + (nx - 1)];
 	residuo[i] = sistemaLinear->b[i] - multiplicacao;
 
@@ -313,11 +314,12 @@ double normaL2Residuo(sL *sistemaLinear, double *x, int nx, int ny){
 	multiplicacao = sistemaLinear->principal[i] * x[i] + sistemaLinear->inferiorAfastada[i] * x[i - (nx - 1)] + sistemaLinear->inferior[i] * x[i - 1];
 	residuo[i] = sistemaLinear->b[i] - multiplicacao;
 
+	LIKWID_MARKER_STOP("CALCULO-RESIDUO");
+
 	for (i = 0; i < (nx * ny); ++i){
 		normaL2 += (residuo[i] * residuo[i]);
 	}
 
-	LIKWID_MARKER_STOP("teste");
 
 	return sqrt(normaL2);
 }
@@ -339,6 +341,7 @@ int gaussSeidel (sL *SL, double *x, int nx, int ny, int itr, double *tempoItr, d
 	int i, k = 0;
 
 	while (k < itr) {
+		LIKWID_MARKER_START("GAUSS-SEIDEL");
 		i = 0;
 
 		inicio = timestamp();
@@ -364,6 +367,8 @@ int gaussSeidel (sL *SL, double *x, int nx, int ny, int itr, double *tempoItr, d
 
 		xk = (SL->b[i] - (SL->inferior[i]*x[i-1] + SL->inferiorAfastada[i]*x[i- (nx - 1)])) / SL->principal[i];
 		x[i] = xk;
+
+		LIKWID_MARKER_STOP("GAUSS-SEIDEL");
 
 		fim = timestamp();
 

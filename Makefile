@@ -1,4 +1,4 @@
-CFLAGS = -lm
+CFLAGS = -lm -O3 -mavx -march=native
 LFLAGS = -DLIKWID_PERFMON -I /home/soft/likwid/include -L /home/soft/likwid/lib -llikwid
 
 OBJS = pdeSolver.o functions.o utils.o
