@@ -28,6 +28,8 @@ int main(int argc, char **argv){
 	if (param == -1){
 
 		fprintf(stderr, "\n\n ERRO NOS PARÂMETROS!!!\n\n");
+
+		LIKWID_MARKER_CLOSE;
 		return(-1);
 	}
 	else {
@@ -52,8 +54,10 @@ int main(int argc, char **argv){
 
 		itrConverge = gaussSeidel(sistemaLinear, x, nx, ny, itr, tempoItr, normaL2Itr);
 		
-		printResultado(tempoItr, normaL2Itr, itrConverge, (nx * ny), pontosSL, caminhoSaida, x);
-	}
+		LIKWID_MARKER_CLOSE;
 
-	LIKWID_MARKER_CLOSE;
+		printResultado(tempoItr, normaL2Itr, itrConverge, (nx * ny), pontosSL, caminhoSaida, x);
+
+		return (0);
+	}
 }
