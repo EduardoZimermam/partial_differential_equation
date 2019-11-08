@@ -341,10 +341,11 @@ int gaussSeidel (sL *SL, double *x, int nx, int ny, int itr, double *tempoItr, d
 	int i, k = 0;
 
 	while (k < itr) {
-		LIKWID_MARKER_START("GAUSS-SEIDEL");
 		i = 0;
 
 		inicio = timestamp();
+
+		LIKWID_MARKER_START("GAUSS-SEIDEL");
 		
 		xk = (SL->b[i] - (SL->superior[i]*x[i+1] + SL->superiorAfastada[i]*x[i + (nx - 1)])) / SL->principal[i];
 		norma = fabs(xk - x[i]);
