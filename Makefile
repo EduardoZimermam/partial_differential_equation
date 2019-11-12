@@ -35,6 +35,7 @@ Doxyfile:
 clean:
 	-rm -f $(OBJS) *~ pdeSolver
 	-rm -rf html
+	-rm functions.h.gch
 
 purge:
 	-rm -f $(OBJS) *~
