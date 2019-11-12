@@ -294,25 +294,25 @@ double normaL2Residuo(sL *sistemaLinear, double *x, int nx, int ny){
 
 	LIKWID_MARKER_START("CALCULO-RESIDUO");
 
-	multiplicacao = sistemaLinear->principal[i] * x[i] + sistemaLinear->superior[i] * x[i + 1] + sistemaLinear->superiorAfastada[i] * x[i + (nx - 1)];
+	multiplicacao = ((sistemaLinear->principal[i] * x[i]) + (sistemaLinear->superior[i] * x[i + 1])) + (sistemaLinear->superiorAfastada[i] * x[i + (nx - 1)]);
 	residuo[i] = sistemaLinear->b[i] - multiplicacao;
 
 	for (i = 1; i - (nx - 1) < 0; ++i){
-		multiplicacao = sistemaLinear->principal[i] * x[i] + sistemaLinear->inferior[i] * x[i - 1] + sistemaLinear->superior[i] * x[i + 1] + sistemaLinear->superiorAfastada[i] * x[i + (nx - 1)];
+		multiplicacao = ((sistemaLinear->principal[i] * x[i]) + (sistemaLinear->inferior[i] * x[i - 1])) + ((sistemaLinear->superior[i] * x[i + 1]) + (sistemaLinear->superiorAfastada[i] * x[i + (nx - 1)]));
 		residuo[i] = sistemaLinear->b[i] - multiplicacao;
 	}
 
 	for (i = i; (i + (nx - 1)) < (nx * ny); ++i){
-		multiplicacao = sistemaLinear->principal[i] * x[i] + sistemaLinear->inferiorAfastada[i] * x[i - (nx - 1)] + sistemaLinear->inferior[i] * x[i - 1] + sistemaLinear->superior[i] * x[i + 1] + sistemaLinear->superiorAfastada[i] * x[i + (nx - 1)];
+		multiplicacao = ((sistemaLinear->principal[i] * x[i]) + (sistemaLinear->inferiorAfastada[i] * x[i - (nx - 1)])) + ((sistemaLinear->inferior[i] * x[i - 1]) + (sistemaLinear->superior[i] * x[i + 1])) + (sistemaLinear->superiorAfastada[i] * x[i + (nx - 1)]);
 		residuo[i] = sistemaLinear->b[i] - multiplicacao;
 	}
 
 	for (i = i; i < (nx * ny) - 1; ++i){
-		multiplicacao = sistemaLinear->principal[i] * x[i] + sistemaLinear->inferiorAfastada[i] * x[i - (nx - 1)] + sistemaLinear->inferior[i] * x[i - 1] + sistemaLinear->superior[i] * x[i + 1];
+		multiplicacao = ((sistemaLinear->principal[i] * x[i]) + (sistemaLinear->inferiorAfastada[i] * x[i - (nx - 1)])) + ((sistemaLinear->inferior[i] * x[i - 1]) + (sistemaLinear->superior[i] * x[i + 1]));
 		residuo[i] = sistemaLinear->b[i] - multiplicacao;
 	}
 
-	multiplicacao = sistemaLinear->principal[i] * x[i] + sistemaLinear->inferiorAfastada[i] * x[i - (nx - 1)] + sistemaLinear->inferior[i] * x[i - 1];
+	multiplicacao = ((sistemaLinear->principal[i] * x[i]) + (sistemaLinear->inferiorAfastada[i] * x[i - (nx - 1)])) + (sistemaLinear->inferior[i] * x[i - 1]);
 	residuo[i] = sistemaLinear->b[i] - multiplicacao;
 
 	LIKWID_MARKER_STOP("CALCULO-RESIDUO");
@@ -352,19 +352,19 @@ int gaussSeidel (sL *SL, double *x, int nx, int ny, int itr, double *tempoItr, d
 		norma = fabs(xk - x[i]);
 		x[i] = xk;
 
-
-		for (i = 1; i < (nx * ny) - 1; i++)	{
-
-			if ((i - (nx - 1)) < 0){
-				xk = (SL->b[i] - ((SL->superiorAfastada[i]*x[i + (nx - 1)] + SL->superior[i]*x[i+1]) - SL->inferior[i]*x[i-1])) / SL->principal[i];
-				x[i] = xk;
-			} else if ((i + (nx - 1)) > (nx * ny)) {
-				xk = (SL->b[i] - (SL->superior[i]*x[i+1] - (SL->inferior[i]*x[i-1] + SL->inferiorAfastada[i]*x[i - (nx - 1)]))) / SL->principal[i];
-				x[i] = xk;				
-			} else {
-				xk = (SL->b[i] - ((SL->superiorAfastada[i]*x[i + (nx - 1)] + SL->superior[i]*x[i+1]) - (SL->inferior[i]*x[i-1] + SL->inferiorAfastada[i]*x[i - (nx - 1)]))) / SL->principal[i];
-				x[i] = xk;
-			}
+		for (i = 1; i - (nx - 1) < 0; ++i){
+			xk = (SL->b[i] - ((SL->superiorAfastada[i]*x[i + (nx - 1)] + SL->superior[i]*x[i+1]) - SL->inferior[i]*x[i-1])) / SL->principal[i];
+			x[i] = xk;
+		}
+	
+		for (i = i; (i + (nx - 1)) < (nx * ny); ++i){
+			xk = (SL->b[i] - ((SL->superiorAfastada[i]*x[i + (nx - 1)] + SL->superior[i]*x[i+1]) - (SL->inferior[i]*x[i-1] + SL->inferiorAfastada[i]*x[i - (nx - 1)]))) / SL->principal[i];
+			x[i] = xk;
+		}
+	
+		for (i = i; i < (nx * ny) - 1; ++i){
+			xk = (SL->b[i] - (SL->superior[i]*x[i+1] - (SL->inferior[i]*x[i-1] + SL->inferiorAfastada[i]*x[i - (nx - 1)]))) / SL->principal[i];
+			x[i] = xk;
 		}
 
 		xk = (SL->b[i] - (SL->inferior[i]*x[i-1] + SL->inferiorAfastada[i]*x[i- (nx - 1)])) / SL->principal[i];
