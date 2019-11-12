@@ -297,18 +297,19 @@ double normaL2Residuo(sL *sistemaLinear, double *x, int nx, int ny){
 	multiplicacao = sistemaLinear->principal[i] * x[i] + sistemaLinear->superior[i] * x[i + 1] + sistemaLinear->superiorAfastada[i] * x[i + (nx - 1)];
 	residuo[i] = sistemaLinear->b[i] - multiplicacao;
 
-	for (i = 1; i < (nx * ny) - 1; i++)	{
+	for (i = 1; i - (nx - 1) < 0; ++i){
+		multiplicacao = sistemaLinear->principal[i] * x[i] + sistemaLinear->inferior[i] * x[i - 1] + sistemaLinear->superior[i] * x[i + 1] + sistemaLinear->superiorAfastada[i] * x[i + (nx - 1)];
+		residuo[i] = sistemaLinear->b[i] - multiplicacao;
+	}
 
-		if ((i - (nx - 1)) < 0){
-			multiplicacao = sistemaLinear->principal[i] * x[i] + sistemaLinear->inferior[i] * x[i - 1] + sistemaLinear->superior[i] * x[i + 1] + sistemaLinear->superiorAfastada[i] * x[i + (nx - 1)];
-			residuo[i] = sistemaLinear->b[i] - multiplicacao;
-		} else if ((i + (nx - 1)) > (nx * ny)) {
-			multiplicacao = sistemaLinear->principal[i] * x[i] + sistemaLinear->inferiorAfastada[i] * x[i - (nx - 1)] + sistemaLinear->inferior[i] * x[i - 1] + sistemaLinear->superior[i] * x[i + 1];
-			residuo[i] = sistemaLinear->b[i] - multiplicacao;
-		} else {
-			multiplicacao = sistemaLinear->principal[i] * x[i] + sistemaLinear->inferiorAfastada[i] * x[i - (nx - 1)] + sistemaLinear->inferior[i] * x[i - 1] + sistemaLinear->superior[i] * x[i + 1] + sistemaLinear->superiorAfastada[i] * x[i + (nx - 1)];
-			residuo[i] = sistemaLinear->b[i] - multiplicacao;
-		}
+	for (i = i; (i + (nx - 1)) < (nx * ny); ++i){
+		multiplicacao = sistemaLinear->principal[i] * x[i] + sistemaLinear->inferiorAfastada[i] * x[i - (nx - 1)] + sistemaLinear->inferior[i] * x[i - 1] + sistemaLinear->superior[i] * x[i + 1] + sistemaLinear->superiorAfastada[i] * x[i + (nx - 1)];
+		residuo[i] = sistemaLinear->b[i] - multiplicacao;
+	}
+
+	for (i = i; i < (nx * ny) - 1; ++i){
+		multiplicacao = sistemaLinear->principal[i] * x[i] + sistemaLinear->inferiorAfastada[i] * x[i - (nx - 1)] + sistemaLinear->inferior[i] * x[i - 1] + sistemaLinear->superior[i] * x[i + 1];
+		residuo[i] = sistemaLinear->b[i] - multiplicacao;
 	}
 
 	multiplicacao = sistemaLinear->principal[i] * x[i] + sistemaLinear->inferiorAfastada[i] * x[i - (nx - 1)] + sistemaLinear->inferior[i] * x[i - 1];
@@ -418,7 +419,7 @@ void printResultado(double *tempoItr, double *normaL2Itr, int itrConverge, int t
 	fprintf(arquivoSaida, "# Norma L2 do Residuo\n");
 
 	for (int i = 0; i < itrConverge; ++i){
-		fprintf(arquivoSaida, "# i=%d: %.15lf\n", i + 1, normaL2Itr[i]);
+		// fprintf(arquivoSaida, "# i=%d: %.15lf\n", i + 1, normaL2Itr[i]);
 	}
 
 	fprintf(arquivoSaida, "###########\n\n");
@@ -426,6 +427,6 @@ void printResultado(double *tempoItr, double *normaL2Itr, int itrConverge, int t
 	/*print de todos os pontos da malha*/
 
 	for (int i = 0; i < tam; ++i){
-		fprintf(arquivoSaida, "%.15lf %.15lf %.15lf\n", pontosSL->x[i], pontosSL->y[i], x[i]);
+		// fprintf(arquivoSaida, "%.15lf %.15lf %.15lf\n", pontosSL->x[i], pontosSL->y[i], x[i]);
 	}	
 }
