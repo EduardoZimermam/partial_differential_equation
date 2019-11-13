@@ -16,7 +16,6 @@
 #include "functions.h"
 #include "utils.h"
 
-
 /**
  * @brief Lê a linha de comando de forma dinâmica.
  * @param argc    Número de argumentos da linha de comando.
@@ -143,8 +142,6 @@ sL* calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, 
 	int idx = 0;
 	sL *sistemaLinear;
 
-	sistemaLinear = malloc(sizeof(sL));
-
 	/*Cálculo dos Coeficientes Uij*/
 	esquerda = -2 * (hy * hy) - hx * (hy * hy);
 	direita = -2 * (hy * hy) + hx * (hy * hy);
@@ -152,126 +149,123 @@ sL* calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, 
 	baixo = -2 * (hx * hx) - hy * (hx * hx);
 	central = 4 * (hy * hy) + 4 * (hx * hx) + 2 * (hx * hx) * (hy * hy) * n;
 
-	/*Alocação dos vetores das diagonais*/
-	sistemaLinear->superiorAfastada = alocaVetor(nx * ny);
-	sistemaLinear->superior = alocaVetor(nx * ny);
-	sistemaLinear->principal = alocaVetor(nx * ny);
-	sistemaLinear->inferior = alocaVetor(nx * ny);
-	sistemaLinear->inferiorAfastada = alocaVetor(nx * ny);
-	sistemaLinear->b = alocaVetor(nx * ny);
+	/* Alocação de todo o sistema linear em um único vetor para melhorar a métrica de CACHE MISS */
+	sistemaLinear = malloc(sizeof(sL));
+	sistemaLinear->sistemaLinearCompleto = alocaVetor(((nx * ny) * PULO) + 1);
 
 	/*Cálculo do Ponto Inferior Esquerdo*/
 	bordaInferior = limiteInferior(0.0 + hx);
-	sistemaLinear->superiorAfastada[idx] = cima;
-	sistemaLinear->superior[idx] = direita;
-	sistemaLinear->principal[idx] = central;
-	sistemaLinear->inferior[idx] = 0.0;
-	sistemaLinear->inferiorAfastada[idx] = 0.0;
+	sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 1] = 0.0;
+	sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 2] = 0.0;
+	sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 3] = central;
+	sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 4] = direita;
+	sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 5] = cima;
 	pontosSL->x[idx] = hx;
 	pontosSL->y[idx] = hy;
-	sistemaLinear->b[idx] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (0.0 * esquerda) - (bordaInferior * baixo);
+	sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 6] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (0.0 * esquerda) - (bordaInferior * baixo);
 	idx++;
 
 	/*Cálculo dos pontos da Borda Inferior*/
 	for (int i = 2; i <= nx - 1; i++)	{
 		bordaInferior = limiteInferior(i * hx);
-		sistemaLinear->superiorAfastada[idx] = cima;
-		sistemaLinear->superior[idx] = direita;
-		sistemaLinear->principal[idx] = central;
-		sistemaLinear->inferior[idx] = esquerda;
-		sistemaLinear->inferiorAfastada[idx] = 0.0;
+		sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 1] = 0.0;
+		sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 2] = esquerda;
+		sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 3] = central;
+		sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 4] = direita;
+		sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 5] = cima;
 		pontosSL->x[idx] = i * hx;
 		pontosSL->y[idx] = hy;
-		sistemaLinear->b[idx] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (bordaInferior * baixo);
+		sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 6] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (bordaInferior * baixo);
 		idx++;
 	}
 
 	/*Cálculo do Ponto Inferior Direito*/
 	bordaInferior = limiteInferior(M_PI - hx);
-	sistemaLinear->superiorAfastada[idx] = cima;
-	sistemaLinear->superior[idx] = 0.0;
-	sistemaLinear->principal[idx] = central;
-	sistemaLinear->inferior[idx] = esquerda;
-	sistemaLinear->inferiorAfastada[idx] = 0.0;
+	sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 1] = 0.0;
+	sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 2] = esquerda;
+	sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 3] = central;
+	sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 4] = 0.0;
+	sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 5] = cima;
 	pontosSL->x[idx] = M_PI - hx;
 	pontosSL->y[idx] = hy;
-	sistemaLinear->b[idx] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (0.0 * direita) - (bordaInferior * baixo);
+	sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 6] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (0.0 * direita) - (bordaInferior * baixo);
 	idx++;
 
 	/*Cálculo dos Pontos internos da malha*/
 	for (int i = 2; i <= ny - 1; i++)	{
 		
 		/* Cálculo do ponto da borda da esquerda */
-		sistemaLinear->superiorAfastada[idx] = cima;
-		sistemaLinear->superior[idx] = direita;
-		sistemaLinear->principal[idx] = central;
-		sistemaLinear->inferior[idx] = 0.0;
-		sistemaLinear->inferiorAfastada[idx] = baixo;
+		sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 1] = baixo;
+		sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 2] = 0.0;
+		sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 3] = central;
+		sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 4] = direita;
+		sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 5] = cima;
 		pontosSL->x[idx] = hx;
 		pontosSL->y[idx] = i * hy;
-		sistemaLinear->b[idx] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (0.0 * esquerda);
+		sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 6] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (0.0 * esquerda);
 		idx++;
 
 		for (int j = 2; j <= nx - 1; j++) {
-			sistemaLinear->superiorAfastada[idx] = cima;
-			sistemaLinear->superior[idx] = direita;
-			sistemaLinear->principal[idx] = central;
-			sistemaLinear->inferior[idx] = esquerda;
-			sistemaLinear->inferiorAfastada[idx] = baixo;
+			sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 1] = baixo;
+			sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 2] = esquerda;
+			sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 3] = central;
+			sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 4] = direita;
+			sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 5] = cima;
 			pontosSL->x[idx] = j * hx;
 			pontosSL->y[idx] = i * hy;
-			sistemaLinear->b[idx] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]);
+			sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 6] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]);
 			idx++;
 		}
 
 		/* Cálculo do ponto da borda da direita */
-		sistemaLinear->superiorAfastada[idx] = cima;
-		sistemaLinear->superior[idx] = 0.0;
-		sistemaLinear->principal[idx] = central;
-		sistemaLinear->inferior[idx] = esquerda;
-		sistemaLinear->inferiorAfastada[idx] = baixo;
+		sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 1] = baixo;
+		sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 2] = esquerda;
+		sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 3] = central;
+		sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 4] = 0.0;
+		sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 5] = cima;
 		pontosSL->x[idx] = M_PI - hx;
 		pontosSL->y[idx] = i * hy;
-		sistemaLinear->b[idx] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (0.0 * direita);
+		sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 6] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (0.0 * direita);
 		idx++;
 	}
 
 	/*Cálculo do Ponto Superior Esquerdo*/
 	bordaSuperior = limiteSuperior(0.0 + hx);
-	sistemaLinear->superiorAfastada[idx] = 0.0;
-	sistemaLinear->superior[idx] = direita;
-	sistemaLinear->principal[idx] = central;
-	sistemaLinear->inferior[idx] = 0.0;
-	sistemaLinear->inferiorAfastada[idx] = baixo;
+	sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 1] = baixo;
+	sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 2] = 0.0;
+	sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 3] = central;
+	sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 4] = direita;
+	sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 5] = 0.0;
 	pontosSL->x[idx] = hx;
 	pontosSL->y[idx] = M_PI - hy;
-	sistemaLinear->b[idx] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (0.0 * esquerda) - (bordaSuperior * cima);
+	sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 6] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (0.0 * esquerda) - (bordaSuperior * cima);
 	idx++;
 
 	/*Cálculo dos pontos da Borda Superior*/
 	for (int i = 2; i <= nx - 1; i++)	{
 		bordaSuperior = limiteSuperior(i * hx);
-		sistemaLinear->superiorAfastada[idx] = 0.0;
-		sistemaLinear->superior[idx] = direita;
-		sistemaLinear->principal[idx] = central;
-		sistemaLinear->inferior[idx] = esquerda;
-		sistemaLinear->inferiorAfastada[idx] = baixo;
+		sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 1] = baixo;
+		sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 2] = esquerda;
+		sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 3] = central;
+		sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 4] = direita;
+		sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 5] = 0.0;
 		pontosSL->x[idx] = i * hx;
 		pontosSL->y[idx] = M_PI - hy;
-		sistemaLinear->b[idx] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (bordaSuperior * cima);
+		sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 6] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (bordaSuperior * cima);
 		idx++;
 	}
 
 	/*Cálculo do Ponto Superior Direito*/
 	bordaSuperior = limiteSuperior(M_PI - hx);
-	sistemaLinear->superiorAfastada[idx] = 0.0;
-	sistemaLinear->superior[idx] = 0.0;
-	sistemaLinear->principal[idx] = central;
-	sistemaLinear->inferior[idx] = esquerda;
-	sistemaLinear->inferiorAfastada[idx] = baixo;
+	sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 1] = baixo;
+	sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 2] = esquerda;
+	sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 3] = central;
+	sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 4] = 0.0;
+	sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 5] = 0.0;
 	pontosSL->x[idx] = M_PI - hx;
 	pontosSL->y[idx] = M_PI - hy;
-	sistemaLinear->b[idx] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (0.0 * direita) - (bordaSuperior * cima);
+	sistemaLinear->sistemaLinearCompleto[(idx * PULO) + 6] = calculaFuncao(pontosSL->x[idx], pontosSL->y[idx]) - (0.0 * direita) - (bordaSuperior * cima);
+	idx++;
 
 	return (sistemaLinear);
 }
@@ -285,7 +279,7 @@ sL* calculaEquacaoDiferencialParcial(double hx, double hy, double n, double nx, 
  *
  * @return Retorna o cálculo na norma Euclidiana.
  */
-double normaL2Residuo(sL *sistemaLinear, double *x, int nx, int ny){ 
+double normaL2Residuo(sL *sistemaLinear, int nx, int ny){ 
 
 	double *residuo, normaL2, multiplicacao;
 	int i = 0;
@@ -294,26 +288,26 @@ double normaL2Residuo(sL *sistemaLinear, double *x, int nx, int ny){
 
 	LIKWID_MARKER_START("CALCULO-RESIDUO");
 
-	multiplicacao = ((sistemaLinear->principal[i] * x[i]) + (sistemaLinear->superior[i] * x[i + 1])) + (sistemaLinear->superiorAfastada[i] * x[i + (nx - 1)]);
-	residuo[i] = sistemaLinear->b[i] - multiplicacao;
+	multiplicacao = ((sistemaLinear->sistemaLinearCompleto[(i * PULO) + 3] * sistemaLinear->sistemaLinearCompleto[(i * PULO) + 7]) + (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 4] * sistemaLinear->sistemaLinearCompleto[((i + 1) * PULO) + 7])) + (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 5] * sistemaLinear->sistemaLinearCompleto[((i + (nx - 1)) * PULO) + 7]);
+	residuo[i] = sistemaLinear->sistemaLinearCompleto[(i * PULO) + 6] - multiplicacao;
 
 	for (i = 1; i - (nx - 1) < 0; ++i){
-		multiplicacao = ((sistemaLinear->principal[i] * x[i]) + (sistemaLinear->inferior[i] * x[i - 1])) + ((sistemaLinear->superior[i] * x[i + 1]) + (sistemaLinear->superiorAfastada[i] * x[i + (nx - 1)]));
-		residuo[i] = sistemaLinear->b[i] - multiplicacao;
+		multiplicacao = ((sistemaLinear->sistemaLinearCompleto[(i * PULO) + 3] * sistemaLinear->sistemaLinearCompleto[(i * PULO) + 7]) + (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 2] * sistemaLinear->sistemaLinearCompleto[((i - 1) * PULO) + 7])) + ((sistemaLinear->sistemaLinearCompleto[(i * PULO) + 4] * sistemaLinear->sistemaLinearCompleto[((i + 1) * PULO) + 7]) + (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 5] * sistemaLinear->sistemaLinearCompleto[((i + (nx - 1)) * PULO) + 7]));
+		residuo[i] = sistemaLinear->sistemaLinearCompleto[(i * PULO) + 6] - multiplicacao;
 	}
 
 	for (i = i; (i + (nx - 1)) < (nx * ny); ++i){
-		multiplicacao = ((sistemaLinear->principal[i] * x[i]) + (sistemaLinear->inferiorAfastada[i] * x[i - (nx - 1)])) + ((sistemaLinear->inferior[i] * x[i - 1]) + (sistemaLinear->superior[i] * x[i + 1])) + (sistemaLinear->superiorAfastada[i] * x[i + (nx - 1)]);
-		residuo[i] = sistemaLinear->b[i] - multiplicacao;
+		multiplicacao = ((sistemaLinear->sistemaLinearCompleto[(i * PULO) + 3] * sistemaLinear->sistemaLinearCompleto[(i * PULO) + 7]) + (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 1] * sistemaLinear->sistemaLinearCompleto[((i - (nx - 1)) * PULO) + 7])) + ((sistemaLinear->sistemaLinearCompleto[(i * PULO) + 2] * sistemaLinear->sistemaLinearCompleto[((i - 1) * PULO) + 7]) + (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 4] * sistemaLinear->sistemaLinearCompleto[((i + 1) * PULO) + 7])) + (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 5] * sistemaLinear->sistemaLinearCompleto[((i + (nx - 1)) * PULO) + 7]);
+		residuo[i] = sistemaLinear->sistemaLinearCompleto[(i * PULO) + 6] - multiplicacao;
 	}
 
 	for (i = i; i < (nx * ny) - 1; ++i){
-		multiplicacao = ((sistemaLinear->principal[i] * x[i]) + (sistemaLinear->inferiorAfastada[i] * x[i - (nx - 1)])) + ((sistemaLinear->inferior[i] * x[i - 1]) + (sistemaLinear->superior[i] * x[i + 1]));
-		residuo[i] = sistemaLinear->b[i] - multiplicacao;
+		multiplicacao = ((sistemaLinear->sistemaLinearCompleto[(i * PULO) + 3] * sistemaLinear->sistemaLinearCompleto[(i * PULO) + 7]) + (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 1] * sistemaLinear->sistemaLinearCompleto[((i - (nx - 1)) * PULO) + 7])) + ((sistemaLinear->sistemaLinearCompleto[(i * PULO) + 2] * sistemaLinear->sistemaLinearCompleto[((i - 1) * PULO) + 7]) + (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 4] * sistemaLinear->sistemaLinearCompleto[((i + 1) * PULO) + 7]));
+		residuo[i] = sistemaLinear->sistemaLinearCompleto[(i * PULO) + 6] - multiplicacao;
 	}
 
-	multiplicacao = ((sistemaLinear->principal[i] * x[i]) + (sistemaLinear->inferiorAfastada[i] * x[i - (nx - 1)])) + (sistemaLinear->inferior[i] * x[i - 1]);
-	residuo[i] = sistemaLinear->b[i] - multiplicacao;
+	multiplicacao = ((sistemaLinear->sistemaLinearCompleto[(i * PULO) + 3] * sistemaLinear->sistemaLinearCompleto[(i * PULO) + 7]) + (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 1] * sistemaLinear->sistemaLinearCompleto[((i - (nx - 1)) * PULO) + 7])) + (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 2] * sistemaLinear->sistemaLinearCompleto[((i - 1) * PULO) + 7]);
+	residuo[i] = sistemaLinear->sistemaLinearCompleto[(i * PULO) + 6] - multiplicacao;
 
 	LIKWID_MARKER_STOP("CALCULO-RESIDUO");
 
@@ -337,7 +331,7 @@ double normaL2Residuo(sL *sistemaLinear, double *x, int nx, int ny){
  *
  * @return Retorna o total de iterações efetuadas se convergiu, ou -1 se houve erro.
  */
-int gaussSeidel (sL *SL, double *x, int nx, int ny, int itr, double *tempoItr, double *normaL2Itr) {
+int gaussSeidel (sL *SL, int nx, int ny, int itr, double *tempoItr, double *normaL2Itr) {
 	double norma, diff, xk, inicio, fim;
 	int i, k = 0;
 
@@ -348,33 +342,33 @@ int gaussSeidel (sL *SL, double *x, int nx, int ny, int itr, double *tempoItr, d
 
 		LIKWID_MARKER_START("GAUSS-SEIDEL");
 		
-		xk = (SL->b[i] - (SL->superior[i]*x[i+1] + SL->superiorAfastada[i]*x[i + (nx - 1)])) / SL->principal[i];
-		norma = fabs(xk - x[i]);
-		x[i] = xk;
+		xk = (SL->sistemaLinearCompleto[(i * PULO) + 6] - (SL->sistemaLinearCompleto[(i * PULO) + 4]*SL->sistemaLinearCompleto[((i+1) * PULO) + 7] + SL->sistemaLinearCompleto[(i * PULO) + 5]*SL->sistemaLinearCompleto[((i + (nx - 1)) * PULO) + 7])) / SL->sistemaLinearCompleto[(i * PULO) + 3];
+		norma = fabs(xk - SL->sistemaLinearCompleto[(i * PULO) + 7]);
+		SL->sistemaLinearCompleto[(i * PULO) + 7] = xk;
 
 		for (i = 1; i - (nx - 1) < 0; ++i){
-			xk = (SL->b[i] - ((SL->superiorAfastada[i]*x[i + (nx - 1)] + SL->superior[i]*x[i+1]) - SL->inferior[i]*x[i-1])) / SL->principal[i];
-			x[i] = xk;
+			xk = (SL->sistemaLinearCompleto[(i * PULO) + 6] - ((SL->sistemaLinearCompleto[(i * PULO) + 5]*SL->sistemaLinearCompleto[((i + (nx - 1)) * PULO) + 7] + SL->sistemaLinearCompleto[(i * PULO) + 4]*SL->sistemaLinearCompleto[((i+1) * PULO) + 7]) - SL->sistemaLinearCompleto[(i * PULO) + 2]*SL->sistemaLinearCompleto[((i-1) * PULO) + 7])) / SL->sistemaLinearCompleto[(i * PULO) + 3];
+			SL->sistemaLinearCompleto[(i * PULO) + 7] = xk;
 		}
 	
 		for (i = i; (i + (nx - 1)) < (nx * ny); ++i){
-			xk = (SL->b[i] - ((SL->superiorAfastada[i]*x[i + (nx - 1)] + SL->superior[i]*x[i+1]) - (SL->inferior[i]*x[i-1] + SL->inferiorAfastada[i]*x[i - (nx - 1)]))) / SL->principal[i];
-			x[i] = xk;
+			xk = (SL->sistemaLinearCompleto[(i * PULO) + 6] - ((SL->sistemaLinearCompleto[(i * PULO) + 5]*SL->sistemaLinearCompleto[((i + (nx - 1)) * PULO) + 7] + SL->sistemaLinearCompleto[(i * PULO) + 4]*SL->sistemaLinearCompleto[((i+1) * PULO) + 7]) - (SL->sistemaLinearCompleto[(i * PULO) + 2]*SL->sistemaLinearCompleto[((i-1) * PULO) + 7] + SL->sistemaLinearCompleto[(i * PULO) + 1]*SL->sistemaLinearCompleto[((i - (nx - 1)) * PULO) + 7]))) / SL->sistemaLinearCompleto[(i * PULO) + 3];
+			SL->sistemaLinearCompleto[(i * PULO) + 7] = xk;
 		}
 	
 		for (i = i; i < (nx * ny) - 1; ++i){
-			xk = (SL->b[i] - (SL->superior[i]*x[i+1] - (SL->inferior[i]*x[i-1] + SL->inferiorAfastada[i]*x[i - (nx - 1)]))) / SL->principal[i];
-			x[i] = xk;
+			xk = (SL->sistemaLinearCompleto[(i * PULO) + 6] - (SL->sistemaLinearCompleto[(i * PULO) + 4]*SL->sistemaLinearCompleto[((i+1) * PULO) + 7] - (SL->sistemaLinearCompleto[(i * PULO) + 2]*SL->sistemaLinearCompleto[((i-1) * PULO) + 7] + SL->sistemaLinearCompleto[(i * PULO) + 1]*SL->sistemaLinearCompleto[((i - (nx - 1)) * PULO) + 7]))) / SL->sistemaLinearCompleto[(i * PULO) + 3];
+			SL->sistemaLinearCompleto[(i * PULO) + 7] = xk;
 		}
 
-		xk = (SL->b[i] - (SL->inferior[i]*x[i-1] + SL->inferiorAfastada[i]*x[i- (nx - 1)])) / SL->principal[i];
-		x[i] = xk;
+		xk = (SL->sistemaLinearCompleto[(i * PULO) + 6] - (SL->sistemaLinearCompleto[(i * PULO) + 2]*SL->sistemaLinearCompleto[((i-1) * PULO) + 7] + SL->sistemaLinearCompleto[(i * PULO) + 1]*SL->sistemaLinearCompleto[((i- (nx - 1)) * PULO) + 7])) / SL->sistemaLinearCompleto[(i * PULO) + 3];
+		SL->sistemaLinearCompleto[(i * PULO) + 7] = xk;
 
 		LIKWID_MARKER_STOP("GAUSS-SEIDEL");
 
 		fim = timestamp();
 
-		normaL2Itr[k] = normaL2Residuo(SL, x, nx, ny);
+		normaL2Itr[k] = normaL2Residuo(SL, nx, ny);
 		tempoItr[k] = fim - inicio;
 		
 		++k;
@@ -396,7 +390,7 @@ int gaussSeidel (sL *SL, double *x, int nx, int ny, int itr, double *tempoItr, d
  *
  * @return Retorna a escrita do resultado no arquivo de saída ou no stdout.
  */
-void printResultado(double *tempoItr, double *normaL2Itr, int itrConverge, int tam, ponto *pontosSL, char *caminhoSaida, double *x){
+void printResultado(double *tempoItr, double *normaL2Itr, int itrConverge, int tam, ponto *pontosSL, char *caminhoSaida, sL *SL){
 
 	FILE *arquivoSaida;
 	double somaTempo, tempoMedioGS;
@@ -419,14 +413,13 @@ void printResultado(double *tempoItr, double *normaL2Itr, int itrConverge, int t
 	fprintf(arquivoSaida, "# Norma L2 do Residuo\n");
 
 	for (int i = 0; i < itrConverge; ++i){
-		// fprintf(arquivoSaida, "# i=%d: %.15lf\n", i + 1, normaL2Itr[i]);
+		fprintf(arquivoSaida, "# i=%d: %.15lf\n", i + 1, normaL2Itr[i]);
 	}
 
 	fprintf(arquivoSaida, "###########\n\n");
 
 	/*print de todos os pontos da malha*/
-
 	for (int i = 0; i < tam; ++i){
-		// fprintf(arquivoSaida, "%.15lf %.15lf %.15lf\n", pontosSL->x[i], pontosSL->y[i], x[i]);
+		fprintf(arquivoSaida, "%.15lf %.15lf %.15lf\n", pontosSL->x[i], pontosSL->y[i], SL->sistemaLinearCompleto[(i * PULO) + 7]);
 	}	
 }

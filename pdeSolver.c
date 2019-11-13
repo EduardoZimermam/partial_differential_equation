@@ -34,14 +34,13 @@ int main(int argc, char **argv){
 	}
 	else {
 		
-		double  *x, *tempoItr, *normaL2Itr, hx, hy, n;
+		double  *tempoItr, *normaL2Itr, hx, hy, n;
 		sL *sistemaLinear;
 		ponto *pontosSL;
 
-		x = alocaVetor(nx * ny);
 		pontosSL = malloc(sizeof(ponto));
-		pontosSL->x = alocaVetor(nx * ny);
-		pontosSL->y = alocaVetor(nx * ny);
+		pontosSL->x = alocaVetor((nx * ny) + 1);
+		pontosSL->y = alocaVetor((nx * ny) + 1);
 		
 		hx = M_PI / (nx + 1);
 		hy = M_PI / (ny + 1);
@@ -52,11 +51,11 @@ int main(int argc, char **argv){
 		normaL2Itr = alocaVetor(itr);
 		tempoItr = alocaVetor(itr);
 
-		itrConverge = gaussSeidel(sistemaLinear, x, nx, ny, itr, tempoItr, normaL2Itr);
+		itrConverge = gaussSeidel(sistemaLinear, nx, ny, itr, tempoItr, normaL2Itr);
 		
 		LIKWID_MARKER_CLOSE;
 
-		printResultado(tempoItr, normaL2Itr, itrConverge, (nx * ny), pontosSL, caminhoSaida, x);
+		printResultado(tempoItr, normaL2Itr, itrConverge, (nx * ny), pontosSL, caminhoSaida, sistemaLinear);
 
 		return (0);
 	}
