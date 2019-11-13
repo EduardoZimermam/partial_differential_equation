@@ -288,26 +288,40 @@ double normaL2Residuo(sL *sistemaLinear, int nx, int ny){
 
 	LIKWID_MARKER_START("CALCULO-RESIDUO");
 
-	multiplicacao = ((sistemaLinear->sistemaLinearCompleto[(i * PULO) + 3] * sistemaLinear->sistemaLinearCompleto[(i * PULO) + 7]) + (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 4] * sistemaLinear->sistemaLinearCompleto[((i + 1) * PULO) + 7])) + (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 5] * sistemaLinear->sistemaLinearCompleto[((i + (nx - 1)) * PULO) + 7]);
-	residuo[i] = sistemaLinear->sistemaLinearCompleto[(i * PULO) + 6] - multiplicacao;
+	residuo[i] = sistemaLinear->sistemaLinearCompleto[(i * PULO) + 6] - 
+				(((sistemaLinear->sistemaLinearCompleto[(i * PULO) + 3] * sistemaLinear->sistemaLinearCompleto[(i * PULO) + 7]) + 
+				  (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 4] * sistemaLinear->sistemaLinearCompleto[((i + 1) * PULO) + 7])) + 
+				  (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 5] * sistemaLinear->sistemaLinearCompleto[((i + (nx - 1)) * PULO) + 7]));
 
 	for (i = 1; i - (nx - 1) < 0; ++i){
-		multiplicacao = ((sistemaLinear->sistemaLinearCompleto[(i * PULO) + 3] * sistemaLinear->sistemaLinearCompleto[(i * PULO) + 7]) + (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 2] * sistemaLinear->sistemaLinearCompleto[((i - 1) * PULO) + 7])) + ((sistemaLinear->sistemaLinearCompleto[(i * PULO) + 4] * sistemaLinear->sistemaLinearCompleto[((i + 1) * PULO) + 7]) + (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 5] * sistemaLinear->sistemaLinearCompleto[((i + (nx - 1)) * PULO) + 7]));
-		residuo[i] = sistemaLinear->sistemaLinearCompleto[(i * PULO) + 6] - multiplicacao;
+		residuo[i] = sistemaLinear->sistemaLinearCompleto[(i * PULO) + 6] - 
+				  (((sistemaLinear->sistemaLinearCompleto[(i * PULO) + 3] * sistemaLinear->sistemaLinearCompleto[(i * PULO) + 7]) + 
+				    (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 2] * sistemaLinear->sistemaLinearCompleto[((i - 1) * PULO) + 7])) + 
+				   ((sistemaLinear->sistemaLinearCompleto[(i * PULO) + 4] * sistemaLinear->sistemaLinearCompleto[((i + 1) * PULO) + 7]) + 
+				    (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 5] * sistemaLinear->sistemaLinearCompleto[((i + (nx - 1)) * PULO) + 7])));
 	}
 
 	for (i = i; (i + (nx - 1)) < (nx * ny); ++i){
-		multiplicacao = ((sistemaLinear->sistemaLinearCompleto[(i * PULO) + 3] * sistemaLinear->sistemaLinearCompleto[(i * PULO) + 7]) + (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 1] * sistemaLinear->sistemaLinearCompleto[((i - (nx - 1)) * PULO) + 7])) + ((sistemaLinear->sistemaLinearCompleto[(i * PULO) + 2] * sistemaLinear->sistemaLinearCompleto[((i - 1) * PULO) + 7]) + (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 4] * sistemaLinear->sistemaLinearCompleto[((i + 1) * PULO) + 7])) + (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 5] * sistemaLinear->sistemaLinearCompleto[((i + (nx - 1)) * PULO) + 7]);
-		residuo[i] = sistemaLinear->sistemaLinearCompleto[(i * PULO) + 6] - multiplicacao;
+		residuo[i] = sistemaLinear->sistemaLinearCompleto[(i * PULO) + 6] - 
+				  (((sistemaLinear->sistemaLinearCompleto[(i * PULO) + 3] * sistemaLinear->sistemaLinearCompleto[(i * PULO) + 7]) + 
+				    (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 1] * sistemaLinear->sistemaLinearCompleto[((i - (nx - 1)) * PULO) + 7])) + 
+				   ((sistemaLinear->sistemaLinearCompleto[(i * PULO) + 2] * sistemaLinear->sistemaLinearCompleto[((i - 1) * PULO) + 7]) + 
+				    (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 4] * sistemaLinear->sistemaLinearCompleto[((i + 1) * PULO) + 7])) + 
+					(sistemaLinear->sistemaLinearCompleto[(i * PULO) + 5] * sistemaLinear->sistemaLinearCompleto[((i + (nx - 1)) * PULO) + 7]));
 	}
 
 	for (i = i; i < (nx * ny) - 1; ++i){
-		multiplicacao = ((sistemaLinear->sistemaLinearCompleto[(i * PULO) + 3] * sistemaLinear->sistemaLinearCompleto[(i * PULO) + 7]) + (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 1] * sistemaLinear->sistemaLinearCompleto[((i - (nx - 1)) * PULO) + 7])) + ((sistemaLinear->sistemaLinearCompleto[(i * PULO) + 2] * sistemaLinear->sistemaLinearCompleto[((i - 1) * PULO) + 7]) + (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 4] * sistemaLinear->sistemaLinearCompleto[((i + 1) * PULO) + 7]));
-		residuo[i] = sistemaLinear->sistemaLinearCompleto[(i * PULO) + 6] - multiplicacao;
+		residuo[i] = sistemaLinear->sistemaLinearCompleto[(i * PULO) + 6] - 
+				  (((sistemaLinear->sistemaLinearCompleto[(i * PULO) + 3] * sistemaLinear->sistemaLinearCompleto[(i * PULO) + 7]) + 
+				    (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 1] * sistemaLinear->sistemaLinearCompleto[((i - (nx - 1)) * PULO) + 7])) + 
+				   ((sistemaLinear->sistemaLinearCompleto[(i * PULO) + 2] * sistemaLinear->sistemaLinearCompleto[((i - 1) * PULO) + 7]) + 
+					(sistemaLinear->sistemaLinearCompleto[(i * PULO) + 4] * sistemaLinear->sistemaLinearCompleto[((i + 1) * PULO) + 7])));
 	}
 
-	multiplicacao = ((sistemaLinear->sistemaLinearCompleto[(i * PULO) + 3] * sistemaLinear->sistemaLinearCompleto[(i * PULO) + 7]) + (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 1] * sistemaLinear->sistemaLinearCompleto[((i - (nx - 1)) * PULO) + 7])) + (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 2] * sistemaLinear->sistemaLinearCompleto[((i - 1) * PULO) + 7]);
-	residuo[i] = sistemaLinear->sistemaLinearCompleto[(i * PULO) + 6] - multiplicacao;
+	residuo[i] = sistemaLinear->sistemaLinearCompleto[(i * PULO) + 6] - 
+			  (((sistemaLinear->sistemaLinearCompleto[(i * PULO) + 3] * sistemaLinear->sistemaLinearCompleto[(i * PULO) + 7]) + 
+			    (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 1] * sistemaLinear->sistemaLinearCompleto[((i - (nx - 1)) * PULO) + 7])) + 
+			    (sistemaLinear->sistemaLinearCompleto[(i * PULO) + 2] * sistemaLinear->sistemaLinearCompleto[((i - 1) * PULO) + 7]));
 
 	LIKWID_MARKER_STOP("CALCULO-RESIDUO");
 
@@ -332,7 +346,7 @@ double normaL2Residuo(sL *sistemaLinear, int nx, int ny){
  * @return Retorna o total de iterações efetuadas se convergiu, ou -1 se houve erro.
  */
 int gaussSeidel (sL *SL, int nx, int ny, int itr, double *tempoItr, double *normaL2Itr) {
-	double norma, diff, xk, inicio, fim;
+	double diff, inicio, fim;
 	int i, k = 0;
 
 	while (k < itr) {
@@ -342,27 +356,35 @@ int gaussSeidel (sL *SL, int nx, int ny, int itr, double *tempoItr, double *norm
 
 		LIKWID_MARKER_START("GAUSS-SEIDEL");
 		
-		xk = (SL->sistemaLinearCompleto[(i * PULO) + 6] - (SL->sistemaLinearCompleto[(i * PULO) + 4]*SL->sistemaLinearCompleto[((i+1) * PULO) + 7] + SL->sistemaLinearCompleto[(i * PULO) + 5]*SL->sistemaLinearCompleto[((i + (nx - 1)) * PULO) + 7])) / SL->sistemaLinearCompleto[(i * PULO) + 3];
-		norma = fabs(xk - SL->sistemaLinearCompleto[(i * PULO) + 7]);
-		SL->sistemaLinearCompleto[(i * PULO) + 7] = xk;
-
+		SL->sistemaLinearCompleto[(i * PULO) + 7] = (SL->sistemaLinearCompleto[(i * PULO) + 6] - 
+			 (SL->sistemaLinearCompleto[(i * PULO) + 4]*SL->sistemaLinearCompleto[((i+1) * PULO) + 7] + 
+			  SL->sistemaLinearCompleto[(i * PULO) + 5]*SL->sistemaLinearCompleto[((i + (nx - 1)) * PULO) + 7])) / SL->sistemaLinearCompleto[(i * PULO) + 3];
+		
 		for (i = 1; i - (nx - 1) < 0; ++i){
-			xk = (SL->sistemaLinearCompleto[(i * PULO) + 6] - ((SL->sistemaLinearCompleto[(i * PULO) + 5]*SL->sistemaLinearCompleto[((i + (nx - 1)) * PULO) + 7] + SL->sistemaLinearCompleto[(i * PULO) + 4]*SL->sistemaLinearCompleto[((i+1) * PULO) + 7]) - SL->sistemaLinearCompleto[(i * PULO) + 2]*SL->sistemaLinearCompleto[((i-1) * PULO) + 7])) / SL->sistemaLinearCompleto[(i * PULO) + 3];
-			SL->sistemaLinearCompleto[(i * PULO) + 7] = xk;
+			SL->sistemaLinearCompleto[(i * PULO) + 7] = (SL->sistemaLinearCompleto[(i * PULO) + 6] - 
+				((SL->sistemaLinearCompleto[(i * PULO) + 5]*SL->sistemaLinearCompleto[((i + (nx - 1)) * PULO) + 7] + 
+				  SL->sistemaLinearCompleto[(i * PULO) + 4]*SL->sistemaLinearCompleto[((i+1) * PULO) + 7]) - 
+				  SL->sistemaLinearCompleto[(i * PULO) + 2]*SL->sistemaLinearCompleto[((i-1) * PULO) + 7])) / SL->sistemaLinearCompleto[(i * PULO) + 3];
 		}
 	
 		for (i = i; (i + (nx - 1)) < (nx * ny); ++i){
-			xk = (SL->sistemaLinearCompleto[(i * PULO) + 6] - ((SL->sistemaLinearCompleto[(i * PULO) + 5]*SL->sistemaLinearCompleto[((i + (nx - 1)) * PULO) + 7] + SL->sistemaLinearCompleto[(i * PULO) + 4]*SL->sistemaLinearCompleto[((i+1) * PULO) + 7]) - (SL->sistemaLinearCompleto[(i * PULO) + 2]*SL->sistemaLinearCompleto[((i-1) * PULO) + 7] + SL->sistemaLinearCompleto[(i * PULO) + 1]*SL->sistemaLinearCompleto[((i - (nx - 1)) * PULO) + 7]))) / SL->sistemaLinearCompleto[(i * PULO) + 3];
-			SL->sistemaLinearCompleto[(i * PULO) + 7] = xk;
+			SL->sistemaLinearCompleto[(i * PULO) + 7] = (SL->sistemaLinearCompleto[(i * PULO) + 6] - 
+				((SL->sistemaLinearCompleto[(i * PULO) + 5]*SL->sistemaLinearCompleto[((i + (nx - 1)) * PULO) + 7] + 
+				  SL->sistemaLinearCompleto[(i * PULO) + 4]*SL->sistemaLinearCompleto[((i+1) * PULO) + 7]) - 
+				 (SL->sistemaLinearCompleto[(i * PULO) + 2]*SL->sistemaLinearCompleto[((i-1) * PULO) + 7] + 
+				  SL->sistemaLinearCompleto[(i * PULO) + 1]*SL->sistemaLinearCompleto[((i - (nx - 1)) * PULO) + 7]))) / SL->sistemaLinearCompleto[(i * PULO) + 3];
 		}
 	
 		for (i = i; i < (nx * ny) - 1; ++i){
-			xk = (SL->sistemaLinearCompleto[(i * PULO) + 6] - (SL->sistemaLinearCompleto[(i * PULO) + 4]*SL->sistemaLinearCompleto[((i+1) * PULO) + 7] - (SL->sistemaLinearCompleto[(i * PULO) + 2]*SL->sistemaLinearCompleto[((i-1) * PULO) + 7] + SL->sistemaLinearCompleto[(i * PULO) + 1]*SL->sistemaLinearCompleto[((i - (nx - 1)) * PULO) + 7]))) / SL->sistemaLinearCompleto[(i * PULO) + 3];
-			SL->sistemaLinearCompleto[(i * PULO) + 7] = xk;
+			SL->sistemaLinearCompleto[(i * PULO) + 7] = (SL->sistemaLinearCompleto[(i * PULO) + 6] - 
+				 (SL->sistemaLinearCompleto[(i * PULO) + 4]*SL->sistemaLinearCompleto[((i+1) * PULO) + 7] - 
+				 (SL->sistemaLinearCompleto[(i * PULO) + 2]*SL->sistemaLinearCompleto[((i-1) * PULO) + 7] + 
+				  SL->sistemaLinearCompleto[(i * PULO) + 1]*SL->sistemaLinearCompleto[((i - (nx - 1)) * PULO) + 7]))) / SL->sistemaLinearCompleto[(i * PULO) + 3];
 		}
 
-		xk = (SL->sistemaLinearCompleto[(i * PULO) + 6] - (SL->sistemaLinearCompleto[(i * PULO) + 2]*SL->sistemaLinearCompleto[((i-1) * PULO) + 7] + SL->sistemaLinearCompleto[(i * PULO) + 1]*SL->sistemaLinearCompleto[((i- (nx - 1)) * PULO) + 7])) / SL->sistemaLinearCompleto[(i * PULO) + 3];
-		SL->sistemaLinearCompleto[(i * PULO) + 7] = xk;
+		SL->sistemaLinearCompleto[(i * PULO) + 7] = (SL->sistemaLinearCompleto[(i * PULO) + 6] - 
+			 (SL->sistemaLinearCompleto[(i * PULO) + 2]*SL->sistemaLinearCompleto[((i-1) * PULO) + 7] + 
+			  SL->sistemaLinearCompleto[(i * PULO) + 1]*SL->sistemaLinearCompleto[((i- (nx - 1)) * PULO) + 7])) / SL->sistemaLinearCompleto[(i * PULO) + 3];
 
 		LIKWID_MARKER_STOP("GAUSS-SEIDEL");
 
@@ -413,13 +435,13 @@ void printResultado(double *tempoItr, double *normaL2Itr, int itrConverge, int t
 	fprintf(arquivoSaida, "# Norma L2 do Residuo\n");
 
 	for (int i = 0; i < itrConverge; ++i){
-		fprintf(arquivoSaida, "# i=%d: %.15lf\n", i + 1, normaL2Itr[i]);
+		// fprintf(arquivoSaida, "# i=%d: %.15lf\n", i + 1, normaL2Itr[i]);
 	}
 
 	fprintf(arquivoSaida, "###########\n\n");
 
 	/*print de todos os pontos da malha*/
 	for (int i = 0; i < tam; ++i){
-		fprintf(arquivoSaida, "%.15lf %.15lf %.15lf\n", pontosSL->x[i], pontosSL->y[i], SL->sistemaLinearCompleto[(i * PULO) + 7]);
+		// fprintf(arquivoSaida, "%.15lf %.15lf %.15lf\n", pontosSL->x[i], pontosSL->y[i], SL->sistemaLinearCompleto[(i * PULO) + 7]);
 	}	
 }
